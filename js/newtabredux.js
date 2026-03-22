@@ -2195,8 +2195,6 @@ $(document).ready(function() {
             }
         });
     };
-    // only show if enabled and not in incognito
-    if (!chrome.extension.inIncognitoContext) notifRefresh();
     /*
     Baskets: poll websites for shopping cart sizes
     */
