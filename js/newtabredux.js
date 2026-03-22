@@ -266,7 +266,7 @@ $(document).ready(function() {
             },
             "panel": "default",
             "background": {
-                "image": "../img/bg.png",
+                "image": "img/bg.png",
                 "lastImage": null,
                 "repeat": true,
                 "centre": true,
@@ -2003,7 +2003,7 @@ $(document).ready(function() {
         case "":
             $("#settings-style-background-image").prop("placeholder", "(none)");
             break;
-        case "../img/bg.png":
+        case "img/bg.png":
             $("#settings-style-background-image").prop("placeholder", "(default)");
             break;
     }
@@ -2177,7 +2177,7 @@ $(document).ready(function() {
     });
     // reset to default stripes
     $("#settings-style-background-default").click(function(e) {
-        $("#settings-style-background-image").data("val", "../img/bg.png").prop("placeholder", "(default)").val("");
+        $("#settings-style-background-image").data("val", "img/bg.png").prop("placeholder", "(default)").val("");
         $("#settings-style-background-repeat").prop("checked", true);
         $("#settings-style-background-centre").prop("checked", true);
         $("#settings-style-background-fixed").prop("checked", false);
