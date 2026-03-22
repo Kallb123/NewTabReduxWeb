@@ -2214,7 +2214,6 @@ $(document).ready(function() {
             dragdrop: $("#settings-links-edit-dragdrop").prop("checked")
         };
         settings.links["behaviour"].dropdownmiddle = $("#settings-links-behaviour-dropdownmiddle").prop("checked");
-        var revokeError = false;
         settings.notifs["facebook"] = {
             enable: {
                 notifs: $("#settings-notifs-facebook-notifs").prop("checked"),
@@ -2226,7 +2225,6 @@ $(document).ready(function() {
         for (var x in settings.notifs["facebook"].enable) {
             if (settings.notifs["facebook"].enable[x]) off = false;
         }
-        if (off) revoke("facebook");
         settings.notifs["github"] = {
             enable: $("#settings-notifs-github-enable").prop("checked")
         };
@@ -2273,7 +2271,6 @@ $(document).ready(function() {
         for (var x in settings.notifs["linkedin"].enable) {
             if (settings.notifs["linkedin"].enable[x]) off = false;
         }
-        if (off) revoke("linkedin");
         settings.notifs["outlook"] = {
             enable: $("#settings-notifs-outlook-enable").prop("checked")
         };
@@ -2293,7 +2290,6 @@ $(document).ready(function() {
         for (var x in settings.notifs["steam"].enable) {
             if (settings.notifs["steam"].enable[x]) off = false;
         }
-        if (off) revoke("steam");
         settings.notifs["ticktick"] = {
             enable: $("#settings-notifs-ticktick-enable").prop("checked"),
             due: $("#settings-notifs-ticktick-due").prop("checked"),
@@ -2307,7 +2303,6 @@ $(document).ready(function() {
         };
         $.each(settings.notifs, function(key, notif) {
             if (["facebook", "linkedin", "steam"].indexOf(key) >= 0) return;
-            if (!notif.enable) revoke(key);
         });
         settings.baskets = {
             "amazon-uk": $("#settings-baskets-amazon-uk").prop("checked"),
@@ -2315,9 +2310,6 @@ $(document).ready(function() {
             "ebay": $("#settings-baskets-ebay").prop("checked"),
             "steam": $("#settings-baskets-steam").prop("checked")
         };
-        $.each(settings.baskets, function(key, basket) {
-            if (!basket) revoke(key === "steam" ? "steam-store" : key);
-        });
         if (!$("#settings-general-title").val()) $("#settings-general-title").val(manifName);
         settings.general["title"] = $("#settings-general-title").val();
         settings.general["keyboard"] = $("#settings-general-keyboard").prop("checked");
@@ -2339,9 +2331,7 @@ $(document).ready(function() {
             celsius: $("#settings-general-weather-celsius").text()[1] === "C"
         };
         if (!settings.general["weather"].location) settings.general["weather"].show = false;
-        if (!settings.general["weather"].show) revoke("weather");
         settings.general["proxy"] = $("#settings-general-proxy").prop("checked");
-        if (!settings.general["proxy"]) revoke("proxy");
         settings.style["font"] = $("#settings-style-font").val();
         settings.style["favicons"] = $("#settings-style-favicons").prop("checked");
         settings.style["fluid"] = $("#settings-style-fluid").prop("checked");
@@ -2372,9 +2362,6 @@ $(document).ready(function() {
         } catch {
             $("#settings-alerts").append($("<div/>").addClass("alert alert-danger").text("Unable to save to localstorage"));
             $("#settings-save").prop("disabled", false).empty().append(fa("check", false)).append(" Save and reload");
-        }
-        if (revokeError) {
-            $("#settings-alerts").append($("<div/>").addClass("alert alert-warning").text("Failed to revoke permissions"));
         }
         $("#settings-save").empty().append(fa("check", false)).append(" Saved!");
         // reload page
@@ -2622,26 +2609,6 @@ $(document).ready(function() {
             $(this).parent().attr("title", $(this).text());
         });
     };
-    bookmarksCallbacks.push(function() {
-        $("#menu-bookmarks").click(setupHotkeys);
-        var label = $("#menu-bookmarks .menu-label");
-        if (settings.style["topbar"].labels) {
-            label.show();
-        } else {
-            label.parent().attr("title", label.text());
-        }
-    });
-    weatherCallbacks.push(function() {
-        if (settings.style["topbar"].labels) $("#menu-weather .menu-label").show();
-    });
-    proxyCallbacks.push(function() {
-        var label = $("#menu-proxy .menu-label");
-        if (settings.style["topbar"].labels) {
-            label.show();
-        } else {
-            label.parent().attr("title", label.text());
-        }
-    });
     // manually adjust modal-open class as not available at event trigger
     $(".modal").on("show.bs.modal", function(e) {
         $(document.body).addClass("modal-open");
