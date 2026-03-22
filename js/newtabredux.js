@@ -19,7 +19,9 @@ $(document).ready(function() {
     var label = function label(text, settings) {
         return [" ", $("<span/>").addClass("menu-label").html(text)];
     }
-    var manif = chrome.runtime.getManifest();
+    //var manif = chrome.runtime.getManifest();
+    var manifName = "NewTabRedux";
+    var manifVer = "1.16.0"; 
     // default settings
     var settings = {
         "links": {
@@ -228,7 +230,7 @@ $(document).ready(function() {
             "steam": false
         },
         "general": {
-            "title": manif.name,
+            "title": manifName,
             "keyboard": false,
             "clock": {
                 "show": true,
@@ -1382,7 +1384,7 @@ $(document).ready(function() {
             alert.append($("<button/>").addClass("close").attr("data-dismiss", "alert").html("&times;").click(function(e) {
                 chrome.storage.local.set(settings);
             }));
-            alert.append("<span><strong>Welcome to " + manif.name + "!</strong>  To get you started, here are a few sample blocks for your new New Tab page.  "
+            alert.append("<span><strong>Welcome to " + manifName + "!</strong>  To get you started, here are a few sample blocks for your new New Tab page.  "
                          + "Feel free to change or add to them by hovering over the block headings for controls.  "
                          + "Head into Settings for more advanced options, where you can add bookmarks, history, apps, widgets, keyboard shortcuts and more.</span>");
             $("#alerts").append(alert);
@@ -2468,8 +2470,8 @@ $(document).ready(function() {
         } else {
             $("#settings-style-font").closest(".form-group").hide();
         }
-        $(".ext-name").text(manif.name);
-        $(".ext-ver").text(manif.version);
+        $(".ext-name").text(manifName);
+        $(".ext-ver").text(manifVer);
         // reset modal on show
         $("#settings").on("show.bs.modal", function(e) {
             $("#settings-alerts").empty();
@@ -2908,7 +2910,7 @@ $(document).ready(function() {
             $.each(settings.baskets, function(key, basket) {
                 if (!basket) revoke(key === "steam" ? "steam-store" : key);
             });
-            if (!$("#settings-general-title").val()) $("#settings-general-title").val(manif.name);
+            if (!$("#settings-general-title").val()) $("#settings-general-title").val(manifName);
             settings.general["title"] = $("#settings-general-title").val();
             settings.general["keyboard"] = $("#settings-general-keyboard").prop("checked");
             settings.general["clock"] = {
