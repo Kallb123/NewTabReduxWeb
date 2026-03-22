@@ -713,91 +713,6 @@ $(document).ready(function() {
         npRoot.append(npMenu);
         $("#menu-left").append(npRoot);
     }
-    // get weather
-    var weatherCallbacks = [];
-    if (settings.general["weather"].show) {
-        chrome.permissions.contains({
-            origins: ajaxPerms["weather"]
-        }, function(has) {
-            if (!has || !settings.general["weather"].location) {
-                settings.general["weather"].show = false;
-                return;
-            }
-            if (navigator.onLine) {
-                var loc = encodeURIComponent(settings.general["weather"].location);
-                var unit = (settings.general["weather"].celsius ? "metric" : "imperial");
-                $.ajax({
-                    url: "https://api.openweathermap.org/data/2.5/weather?APPID=833b8b2bb6161e0c2b43dab37d0c93a7&q=" + loc + "&units=" + unit,
-                    success: function success(resp, stat, xhr) {
-                        var conds = [];
-                        $.each(resp.weather, function(i, item) {
-                            conds.push(item.description);
-                        });
-                        var temp = Math.round(resp.main.temp);
-                        var title = resp.name + ": " + cap((settings.style["topbar"].labels ? "" : temp + " degrees, ") + conds.join(", "));
-                        var link = $("<a/>").attr("id", "menu-weather").attr("href", "https://www.openweathermap.org/city/" + resp.id)
-                                            .attr("title", title).hide();
-                        link.append(fa("cloud", false)).append(label(temp + "&deg;" + (unit === "metric" ? "C" : "F"), settings));
-                        // always show before proxy link if that loads first
-                        if ($("#menu-proxy").length) {
-                            $("#menu-proxy").before($("<li/>").append(link));
-                        } else {
-                            $("#menu-left").append($("<li/>").append(link));
-                        }
-                        link.fadeIn();
-                        // return any pending callbacks
-                        for (var i in weatherCallbacks) {
-                            weatherCallbacks[i].call();
-                        }
-                    }
-                });
-            }
-        });
-    }
-    // get IP address / proxy status
-    var proxyCallbacks = [];
-    if (settings.general["proxy"]) {
-        chrome.permissions.contains({
-            origins: ajaxPerms["proxy"]
-        }, function(has) {
-            if (!has) {
-                settings.general["proxy"] = false;
-                return;
-            }
-            var link = $("<a/>").attr("id", "menu-proxy");
-            if (navigator.onLine) {
-                $.ajax({
-                    url: "https://www.whatismyproxy.com",
-                    success: function success(resp, stat, xhr) {
-                        var params = $(".h1", resp).text().split("IP address: ");
-                        link.attr("href", "https://www.whatismyproxy.com").hide();
-                        link.append(fa(params[0] === "No proxies were detected." ? "desktop" : "exchange", false)).append(label(params[1], settings));
-                        $("#menu-left").append($("<li/>").attr("id", "menu-proxy").append(link));
-                        link.fadeIn();
-                    },
-                    error: function(xhr, stat, err) {
-                        link.append(fa("power-off", false)).append(label("No connection", settings)).hide();
-                        $("#menu-left").append($("<li/>").attr("id", "menu-proxy").append(link));
-                        link.fadeIn();
-                    },
-                    complete: function(xhr, stat) {
-                        // return any pending callbacks
-                        for (var i in proxyCallbacks) {
-                            proxyCallbacks[i].call();
-                        }
-                    }
-                });
-            } else {
-                link.append(fa("power-off", false)).append(label("No connection", settings)).hide();
-                $("#menu-left").append($("<li/>").append(link));
-                link.fadeIn();
-                // return any pending callbacks
-                for (var i in proxyCallbacks) {
-                    proxyCallbacks[i].call();
-                }
-            }
-        });
-    }
     /*
     Links: customizable grid of links and menus
     */
@@ -1469,285 +1384,6 @@ $(document).ready(function() {
         $("#links").show();
     });
     /*
-    Bookmarks: lightweight bookmark browser
-    */
-    var bookmarksCallbacks = [];
-    if (settings.bookmarks["enable"]) {
-        chrome.permissions.contains({
-            permissions: ["bookmarks"]
-        }, function(has) {
-            if (!has) {
-                settings.bookmarks["enable"] = false;
-                return;
-            }
-            $("#bookmarks").addClass("panel-" + settings.style["panel"]);
-            // switch to bookmarks page
-            $("#menu-bookmarks").click(function(e) {
-                $(".navbar-right li").removeClass("active");
-                $(this).addClass("active");
-                $(".main").hide();
-                $("#bookmarks").show();
-            });
-            // show split pane if enabled
-            if (settings.bookmarks["split"]) {
-                $("#bookmarks-block").before($("<div/>").attr("id", "bookmarks-block-folders").addClass("panel-body"));
-                $("#bookmarks-block").before($("<hr/>"));
-            }
-            // pre-process the bookmark tree to add parent references
-            var processBookmarks = function processBookmarks(root) {
-                for (var i in root.children) {
-                    root.children[i].parent = root;
-                    if (root.children[i].children) processBookmarks(root.children[i]);
-                }
-                return root;
-            };
-            // create a button for a bookmark node
-            var renderBookmark = function renderBookmark(node) {
-                // bookmark
-                if (node.url) {
-                    // bookmarklet
-                    if (node.url.substring(0, "javascript:".length) === "javascript:") {
-                        if (settings.bookmarks["bookmarklets"]) {
-                            return $("<button/>").addClass("btn btn-info disabled").append(fa("code")).append(" " + node.title);
-                        }
-                    } else {
-                        var link = $("<a/>").addClass("btn btn-primary").attr("href", node.url).append(fa("file")).append(" " + node.title);
-                        // workaround for accessing Chrome and URLs
-                        for (var prefix of ["chrome", "chrome-extension", "file"]) {
-                            if (node.url.substring(0, prefix.length + 3) === prefix + "://") {
-                                link.addClass("link-chrome");
-                                break;
-                            }
-                        }
-                        return link;
-                    }
-                // folder
-                } else if (node.children) {
-                    return $("<button/>").addClass("btn btn-warning").append(fa("folder" + (node.children.length ? "" : "-o"))).append(" " + node.title).click(function(e) {
-                        // normal click
-                        if (e.which === 1 && (!ctrlDown || !settings.bookmarks["foldercontents"])) {
-                            populateBookmarks(node);
-                        // middle click or Ctrl+click, if enabled
-                        } else if (e.which <= 2 && settings.bookmarks["foldercontents"]) {
-                            $(node.children).each(function(i, child) {
-                                if (child.url && child.url.substring(0, "javascript:".length) !== "javascript:") chrome.tabs.create({url: child.url, active: false});
-                            });
-                        }
-                    });
-                }
-            };
-            // display a folder in the bookmarks pane
-            var populateBookmarks = function populateBookmarks(root) {
-                // clear current list
-                $("#bookmarks-title, #bookmarks-block, #bookmarks-block-folders").empty();
-                if (!root.children.length) {
-                    $("#bookmarks-block").show().append($("<div/>").addClass("alert alert-info").append("<span>Nothing in this folder.</span>"));
-                    $("#bookmarks-block-folders").hide();
-                }
-                $("#bookmarks-block-search, hr.bookmarks-search").remove();
-                $("#bookmarks-search").val("");
-                // loop through folder children and add to pane
-                $(root.children).each(function(i, node) {
-                    var link = renderBookmark(node);
-                    var container = $("#bookmarks-block" + (settings.bookmarks["split"] && link.hasClass("btn-warning") ? "-folders" : ""));
-                    container.append(link);
-                });
-                $("#bookmarks-block, #bookmarks-block-folders").each(function(i, blk) {
-                    $(blk).toggle(!$(blk).is(":empty"));
-                });
-                $("#bookmarks hr").toggle(!$("#bookmarks-block, #bookmarks-block-folders").is(":empty"));
-                // open Chrome links via Tabs API
-                $(".link-chrome", "#bookmarks-block").click(function(e) {
-                    // normal click, not external
-                    if (e.which === 1 && !ctrlDown && !$(this).hasClass("link-external")) {
-                        chrome.tabs.update({url: this.href});
-                        e.preventDefault();
-                    // middle click, Ctrl+click, or set as external
-                    } else if (e.which <= 2) {
-                        chrome.tabs.create({url: this.href, active: $(this).hasClass("link-external")});
-                        e.preventDefault();
-                    }
-                });
-                // breadcrumb navigation
-                var current = root;
-                var path = [root];
-                while (current.parent) {
-                    current = current.parent;
-                    path.unshift(current);
-                }
-                $(path).each(function(i, node) {
-                    if (i > 0) $("#bookmarks-title").append($("<span/>").addClass("caret-right"));
-                    $("#bookmarks-title").append($("<button/>").addClass("btn btn-sm btn-default").text(node.title).click(function(e) {
-                        populateBookmarks(node);
-                    }));
-                });
-            };
-            // request tree from Bookmarks API
-            chrome.bookmarks.getTree(function bookmarksCallback(tree) {
-                var root = processBookmarks(tree[0]);
-                root.title = "Bookmarks";
-                populateBookmarks(root);
-                if (settings.bookmarks["merge"]) {
-                    $("#bookmarks").fadeIn();
-                } else {
-                    $("#menu-bookmarks").show();
-                }
-                // bookmark search
-                var timeout = 0;
-                $("#bookmarks-search").on("input", function(e) {
-                    var text = $(this).val().toLowerCase();
-                    if (timeout) clearTimeout(timeout);
-                    timeout = setTimeout(function() {
-                        if (!text) {
-                            $("#bookmarks-block-search, hr.bookmarks-search").remove();
-                            return;
-                        }
-                        var results = [];
-                        var search = function search(node) {
-                            // bookmark matching search
-                            if (node.title && node.title.toLowerCase().indexOf(text) > -1) {
-                                results.push(node);
-                            }
-                            // folder
-                            if (node.children) {
-                                $.each(node.children, function(i, child) {
-                                    search(child);
-                                });
-                            }
-                        };
-                        search(root);
-                        var block = $("#bookmarks-block-search");
-                        if (block.length) {
-                            $("#bookmarks-block-search").empty();
-                        } else {
-                            block = $("<div/>").attr("id", "bookmarks-block-search").addClass("panel-body");
-                            $("#bookmarks .panel-heading").after($("<hr/>").addClass("bookmarks-search")).after(block);
-                        }
-                        if (results.length) {
-                            $.each(results, function(i, node) {
-                                $("#bookmarks-block-search").append(renderBookmark(node));
-                            });
-                            // open Chrome links via Tabs API
-                            $(".link-chrome", "#bookmarks-block-search").click(function(e) {
-                                // normal click, not external
-                                if (e.which === 1 && !ctrlDown && !$(this).hasClass("link-external")) {
-                                    chrome.tabs.update({url: this.href});
-                                    e.preventDefault();
-                                // middle click, Ctrl+click, or set as external
-                                } else if (e.which <= 2) {
-                                    chrome.tabs.create({url: this.href, active: $(this).hasClass("link-external")});
-                                    e.preventDefault();
-                                }
-                            });
-                        } else {
-                            $("#bookmarks-block-search").append($("<div/>").addClass("alert alert-info").text("No results."));
-                        }
-                    }, 200);
-                });
-            });
-            // return any pending callbacks
-            for (var i in bookmarksCallbacks) {
-                bookmarksCallbacks[i].call();
-            }
-        });
-    }
-    /*
-    Apps: installed Chrome apps drop-down
-    */
-    if (settings.general["apps"]) {
-        chrome.permissions.contains({
-            permissions: ["management"]
-        }, function(has) {
-            if (!has) {
-                settings.general["apps"] = false;
-                return;
-            }
-            chrome.management.getAll(function(apps) {
-                var show = false;
-                $.each(apps, function(i, app) {
-                    if (app.enabled && ["hosted_app", "packaged_app", "legacy_packaged_app"].indexOf(app.type) > -1) {
-                        var link = $("<a/>").text(app.name).click(function(e) {
-                            chrome.management.launchApp(app.id);
-                            e.preventDefault();
-                        });
-                        if (app.appLaunchUrl) link.attr("href", app.appLaunchUrl);
-                        $("#apps-list").append($("<li/>").append(link));
-                        show = true;
-                    }
-                });
-                if (show) {
-                    var all = $("<a/>").attr("href", "chrome://apps").addClass("link-chrome").append(fa("th")).append(" View all apps");
-                    var allCont = $("<li/>").append(all);
-                    fixLinkHandling(allCont);
-                    var store = $("<a/>").attr("href", "https://chrome.google.com/webstore");
-                    $("#apps-list").append($("<li/>").addClass("divider"))
-                                    .append(allCont)
-                                    .append($("<li/>").append(store.append(fa("shopping-cart")).append(" Chrome Web Store")));
-                    $("#menu-apps").show();
-                }
-            });
-        });
-    }
-    /*
-    History: quick drop-down of recent pages
-    */
-    // only show if enabled and not in incognito
-    if (settings.history["enable"]) {
-        chrome.permissions.contains({
-            permissions: ["history"]
-        }, function(has) {
-            if (!has) {
-                settings.history["enable"] = false;
-                return;
-            }
-            if (settings.history["limit"] === 0) settings.history["limit"] = 10;
-            var block = true;
-            $("#history-title").click(function(e) {
-                // delay opening list until loaded
-                if (block && !$(this).hasClass("active")) {
-                    e.stopPropagation();
-                    // request items from History API
-                    chrome.history.search({text: "", maxResults: settings.history["limit"]}, function historyCallback(results) {
-                        $("#history-list").empty();
-                        // loop through history items
-                        for (var i in results) {
-                            var res = results[i];
-                            var link = $("<a/>").attr("href", res.url).text(trim(res.title ? res.title : res.url, 50));
-                            // workaround for accessing Chrome and file URLs
-                            for (var prefix of ["chrome", "chrome-extension", "file"]) {
-                                if (res.url.substring(0, prefix.length + 3) === prefix + "://") {
-                                    link.click(function(e) {
-                                        // normal click, not external
-                                        if (e.which === 1 && !ctrlDown && !$(this).hasClass("link-external")) {
-                                            chrome.tabs.update({url: this.href});
-                                            e.preventDefault();
-                                        // middle click, Ctrl+click, or set as external
-                                        } else if (e.which <= 2) {
-                                            chrome.tabs.create({url: this.href, active: $(this).hasClass("link-external")});
-                                            e.preventDefault();
-                                        }
-                                    });
-                                    break;
-                                }
-                            }
-                            // add to dropdown
-                            $("#history-list").append($("<li/>").append(link));
-                        }
-                        $("#history-list").append($("<li/>").addClass("divider"));
-                        $("#history-list").append($("<li/>").append($("<a/>").addClass("link-chrome").append(fa("search")).append(" View full history").attr("href", "chrome://history")));
-                        fixLinkHandling("#history-list");
-                        block = false;
-                        $("#history-title").click();
-                    });
-                // reset block
-                } else {
-                    block = true;
-                }
-            });
-            $("#menu-history").show();
-        });
-    }
-    /*
     Notifications: poll websites for notification counts
     */
     // refresh notifications
@@ -2111,83 +1747,67 @@ $(document).ready(function() {
                 pendingPerm++;
                 has = true;
                 try {
-                    chrome.permissions.contains({
-                        origins: origin
-                    }, function(has) {
-                        if (has) {
-                            var handle = handlers[key];
-                            // add menu items
-                            $("#notifs-list").append($("<li/>").addClass("dropdown-header").append(fa(handle.icon)).append("&nbsp; " + handle.title));
-                            var menu = [];
-                            var items = handle.items(notif);
-                            $(items).each(function(i, item) {
-                                var link = $("<a/>").attr("href", item.url).text(item.title);
-                                $("#notifs-list").append($("<li/>").append(link));
-                                menu.push(link);
-                            });
-                            $("#notifs-list").append($("<li/>").addClass("divider"));
-                            if (handle.api) {
-                                // single API call for all items
-                                pendingAjax++;
-                                $.ajax({
-                                    url: handle.api,
-                                    headers: handle.headers,
-                                    dataType: handle.format,
-                                    success: function(resp, stat, xhr) {
-                                        if (typeof(resp) === "string") {
-                                            resp = resp.replace(/<img[\S\s]*?>/g, "").replace(/<script[\S\s]*?>[\S\s]*?<\/script>/g, "");
-                                            resp = resp.replace(/on[a-z]*="[\S\s]*?"/g, "");
-                                        }
-                                        var counts = handle.count(notif, resp);
-                                        for (var i in menu) {
-                                            menu[i].append($("<span/>").addClass("badge pull-right").text(isNaN(counts[i]) ? "?" : counts[i]));
-                                        }
-                                        ajaxCount(typeof(notif.include) === "boolean" && !notif.include ? [0] : counts);
-                                    },
-                                    error: function(xhr, stat, err) {
-                                        for (var i in menu) {
-                                            menu[i].append($("<span/>").addClass("badge pull-right").text("?"));
-                                        }
-                                        ajaxCount([0]);
-                                    }
-                                });
-                            } else {
-                                // API call for each item
-                                $(items).each(function(i, item) {
-                                    pendingAjax++;
-                                    $.ajax({
-                                        url: item.api,
-                                        headers: handle.headers,
-                                        dataType: handle.format,
-                                        success: function(resp, stat, xhr) {
-                                            if (typeof(resp) === "string") {
-                                                resp = resp.replace(/<img[\S\s]*?>/g, "").replace(/<script[\S\s]*?>[\S\s]*?<\/script>/g, "");
-                                                resp = resp.replace(/on[a-z]*="[\S\s]*?"/g, "");
-                                            }
-                                            var count = item.count(notif, resp);
-                                            menu[i].prepend($("<span/>").addClass("badge pull-right").text(isNaN(count) ? "?" : count));
-                                            ajaxCount([count]);
-                                        },
-                                        error: function(xhr, stat, err) {
-                                            menu[i].prepend($("<span/>").addClass("badge pull-right").text("?"));
-                                            ajaxCount([0]);
-                                        }
-                                    });
-                                });
-                            }
-                            pendingCount();
-                        } else {
-                            // permission not available
-                            if (typeof(notif.enable) === "string") {
-                                notif.enable = false;
-                            } else {
-                                for (var x in notif.enable) {
-                                    notif.enable[x] = false;
-                                }
-                            }
-                            pendingCount();
-                        }
+                    var handle = handlers[key];
+                    // add menu items
+                    $("#notifs-list").append($("<li/>").addClass("dropdown-header").append(fa(handle.icon)).append("&nbsp; " + handle.title));
+                    var menu = [];
+                    var items = handle.items(notif);
+                    $(items).each(function(i, item) {
+                        var link = $("<a/>").attr("href", item.url).text(item.title);
+                        $("#notifs-list").append($("<li/>").append(link));
+                        menu.push(link);
                     });
+                    $("#notifs-list").append($("<li/>").addClass("divider"));
+                    if (handle.api) {
+                        // single API call for all items
+                        pendingAjax++;
+                        $.ajax({
+                            url: handle.api,
+                            headers: handle.headers,
+                            dataType: handle.format,
+                            success: function(resp, stat, xhr) {
+                                if (typeof(resp) === "string") {
+                                    resp = resp.replace(/<img[\S\s]*?>/g, "").replace(/<script[\S\s]*?>[\S\s]*?<\/script>/g, "");
+                                    resp = resp.replace(/on[a-z]*="[\S\s]*?"/g, "");
+                                }
+                                var counts = handle.count(notif, resp);
+                                for (var i in menu) {
+                                    menu[i].append($("<span/>").addClass("badge pull-right").text(isNaN(counts[i]) ? "?" : counts[i]));
+                                }
+                                ajaxCount(typeof(notif.include) === "boolean" && !notif.include ? [0] : counts);
+                            },
+                            error: function(xhr, stat, err) {
+                                for (var i in menu) {
+                                    menu[i].append($("<span/>").addClass("badge pull-right").text("?"));
+                                }
+                                ajaxCount([0]);
+                            }
+                        });
+                    } else {
+                        // API call for each item
+                        $(items).each(function(i, item) {
+                            pendingAjax++;
+                            $.ajax({
+                                url: item.api,
+                                headers: handle.headers,
+                                dataType: handle.format,
+                                success: function(resp, stat, xhr) {
+                                    if (typeof(resp) === "string") {
+                                        resp = resp.replace(/<img[\S\s]*?>/g, "").replace(/<script[\S\s]*?>[\S\s]*?<\/script>/g, "");
+                                        resp = resp.replace(/on[a-z]*="[\S\s]*?"/g, "");
+                                    }
+                                    var count = item.count(notif, resp);
+                                    menu[i].prepend($("<span/>").addClass("badge pull-right").text(isNaN(count) ? "?" : count));
+                                    ajaxCount([count]);
+                                },
+                                error: function(xhr, stat, err) {
+                                    menu[i].prepend($("<span/>").addClass("badge pull-right").text("?"));
+                                    ajaxCount([0]);
+                                }
+                            });
+                        });
+                    }
+                    pendingCount();
                 } catch (error) {
                     console.error(error);
                     pendingCount();
@@ -2297,57 +1917,6 @@ $(document).ready(function() {
                 }
             }
         };
-        $.each(settings.baskets, function(key, basket) {
-            if (basket) {
-                // check permissions exist
-                pendingPerm++;
-                has = true;
-                try {
-                    chrome.permissions.contains({
-                        origins: ajaxPerms[key]
-                    }, function(has) {
-                        if (has) {
-                            var handle = handlers[key];
-                            // add menu item
-                            var link = $("<a/>").attr("href", handle.api).append(fa(handle.icon)).append(" ")
-                                                                            .append($("<span/>").addClass("title").text(handle.title));
-                            $("#baskets-list").append($("<li/>").append(link));
-                            pendingAjax++;
-                            $.ajax({
-                                url: handle.api,
-                                success: function(resp, stat, xhr) {
-                                    if (typeof(resp) === "string") {
-                                        resp = resp.replace(/<img[\S\s]*?>/g, "").replace(/<script[\S\s]*?>[\S\s]*?<\/script>/g, "");
-                                        resp = resp.replace(/on[a-z]*="[\S\s]*?"/g, "");
-                                    }
-                                    var count = handle.count(basket, resp);
-                                    link.prepend($("<span/>").addClass("badge pull-right").text(isNaN(count) ? "?" : count));
-                                    ajaxCount(typeof(basket.include) === "boolean" && !basket.include ? 0 : count);
-                                },
-                                error: function(xhr, stat, err) {
-                                    link.prepend($("<span/>").addClass("badge pull-right").text("?"));
-                                    ajaxCount(0);
-                                }
-                            });
-                            pendingCount();
-                        } else {
-                            // permission not available
-                            if (typeof(basket.enable) === "string") {
-                                basket.enable = false;
-                            } else {
-                                for (var x in basket.enable) {
-                                    basket.enable[x] = false;
-                                }
-                            }
-                            pendingPerm--;
-                        }
-                    });
-                } catch (error) {
-                    console.error(error);
-                    pendingCount();
-                }
-            }
-        });
     };
     /*
     Settings: modal to customize links and options
@@ -2358,44 +1927,6 @@ $(document).ready(function() {
         $("#settings-links-edit-dragdrop").prop("checked", settings.links["edit"].dragdrop);
         $("#settings-links-behaviour-dropdownmiddle").prop("checked", settings.links["behaviour"].dropdownmiddle);
         $("#settings-links-content").val(JSON.stringify(settings.links["content"], undefined, 2));
-        $("#settings-bookmarks-enable").prop("checked", settings.bookmarks["enable"]);
-        // highlight bookmarks permission status
-        chrome.permissions.contains({
-            permissions: ["bookmarks"]
-        }, function(has) {
-            if (has) {
-                $(".settings-perm-bookmarks").addClass("has-success");
-            } else {
-                $(".settings-perm-bookmarks").addClass("has-warning");
-                $("#settings-bookmarks-enable").prop("checked", false);
-            }
-        });
-        $("#settings-bookmarks-bookmarklets").prop("checked", settings.bookmarks["bookmarklets"]);
-        $("#settings-bookmarks-foldercontents").prop("checked", settings.bookmarks["foldercontents"]);
-        $("#settings-bookmarks-split").prop("checked", settings.bookmarks["split"]);
-        $("#settings-bookmarks-merge").prop("checked", settings.bookmarks["merge"]);
-        $("#settings-bookmarks-bookmarklets, #settings-bookmarks-foldercontents, #settings-bookmarks-split, #settings-bookmarks-merge")
-            .prop("disabled", !settings.bookmarks["enable"]).parent().toggleClass("text-muted", !settings.bookmarks["enable"]);
-        $("#settings-bookmarks-above").prop("checked", settings.bookmarks["above"])
-                                        .prop("disabled", !(settings.bookmarks["enable"] && settings.bookmarks["merge"]))
-                                        .parent().toggleClass("text-muted", !(settings.bookmarks["enable"] && settings.bookmarks["merge"]));
-        $("#settings-history-enable").prop("checked", settings.history["enable"]);
-        // highlight history permission status
-        chrome.permissions.contains({
-            permissions: ["history"]
-        }, function(has) {
-            if (has) {
-                $(".settings-perm-history").addClass("has-success");
-            } else {
-                $(".settings-perm-history").addClass("has-warning");
-                $("#settings-history-enable").prop("checked", false);
-            }
-        });
-        $("#settings-history-limit").val(settings.history["limit"])
-                                    .prop("disabled", !settings.history["enable"])
-                                    .parent().toggleClass("text-muted", !settings.history["enable"]);
-        $("#settings-history-limit-value").text(settings.history["limit"])
-                                            .parent().toggleClass("text-muted", !settings.history["enable"]);
         $("#settings-notifs-facebook-notifs").prop("checked", settings.notifs["facebook"].enable.notifs);
         $("#settings-notifs-facebook-messages").prop("checked", settings.notifs["facebook"].enable.messages);
         $("#settings-notifs-facebook-friends").prop("checked", settings.notifs["facebook"].enable.friends);
@@ -2429,32 +1960,6 @@ $(document).ready(function() {
         $("#settings-baskets-amazon-usa").prop("checked", settings.baskets["amazon-usa"]);
         $("#settings-baskets-ebay").prop("checked", settings.baskets["ebay"]);
         $("#settings-baskets-steam").prop("checked", settings.baskets["steam"]);
-        // highlight notif/basket permissions status
-        $(".settings-perm").each(function(i, group) {
-            var key = $(group).data("key");
-            let origin = ajaxPerms[key];
-            if (!origin) {
-                let notifHost = settings.notifs[key].host;
-                if (notifHost) {
-                    origin = [notifHost];
-                }
-            }
-            if (!origin) return;
-            try {
-                chrome.permissions.contains({
-                    origins: origin
-                }, function(has) {
-                    if (has && origin) {
-                        $(group).addClass("has-success");
-                    } else {
-                        $(group).addClass("has-warning");
-                        $("input[type=checkbox]", group).prop("checked", false);
-                    }
-                });
-            } catch (error) {
-                console.error(error)
-            }
-        });
         $("#settings-general-title").val(settings.general["title"]);
         $("#settings-general-keyboard").prop("checked", settings.general["keyboard"]);
         $("#settings-general-clock-show").prop("checked", settings.general["clock"].show);
@@ -2470,18 +1975,6 @@ $(document).ready(function() {
                                             .prop("disabled", !settings.general["timer"].countdown)
                                             .parent().toggleClass("text-muted", !settings.general["timer"].countdown);
         $("#settings-general-notepad-show").prop("checked", settings.general["notepad"].show);
-        $("#settings-general-apps").prop("checked", settings.general["apps"]);
-        // highlight apps permission status
-        chrome.permissions.contains({
-            permissions: ["management"]
-        }, function(has) {
-            if (has) {
-                $(".settings-perm-management").addClass("has-success");
-            } else {
-                $(".settings-perm-management").addClass("has-warning");
-                $("#settings-general-apps").prop("checked", false);
-            }
-        });
         $("#settings-general-weather-show").prop("checked", settings.general["weather"].show);
         $("#settings-general-weather-location").val(settings.general["weather"].location)
                                                 .prop("disabled", !settings.general["weather"].show)
@@ -2548,94 +2041,6 @@ $(document).ready(function() {
             $(this).closest(".form-group").addClass("has-error");
         }
     });
-    $("#settings-bookmarks-enable").change(function(e) {
-        $("#settings-alerts").empty();
-        // grant bookmarks permissions
-        if (this.checked) {
-            chrome.permissions.request({
-                permissions: ["bookmarks"]
-            }, function(success) {
-                if (success) {
-                    $(".settings-perm-bookmarks").removeClass("has-warning").addClass("has-success");
-                    $("#settings-bookmarks-bookmarklets, #settings-bookmarks-foldercontents, #settings-bookmarks-split, "
-                        + "#settings-bookmarks-merge")
-                        .prop("disabled", false).parent().removeClass("text-muted");
-                    $("#settings-bookmarks-above").prop("disabled", !$("#settings-bookmarks-merge").prop("checked"))
-                                                    .parent().toggleClass("text-muted", !$("#settings-bookmarks-merge").prop("checked"));
-                } else {
-                    var text = "Permission denied for bookmarks.";
-                    $("#settings-alerts").append($("<div/>").addClass("alert alert-danger").text(text));
-                    $(this).prop("checked", false);
-                }
-            });
-        } else {
-            $("#settings-bookmarks-bookmarklets, #settings-bookmarks-foldercontents, #settings-bookmarks-split, "
-                + "#settings-bookmarks-merge, #settings-bookmarks-above")
-                .prop("disabled", true).parent().addClass("text-muted");
-        }
-    });
-    $("#settings-bookmarks-merge").change(function(e) {
-        $("#settings-bookmarks-above").prop("disabled", !($("#settings-bookmarks-enable").prop("checked") && this.checked))
-                                        .parent().toggleClass("text-muted", !($("#settings-bookmarks-enable").prop("checked") && this.checked));
-    });
-    $("#settings-history-enable").change(function(e) {
-        $("#settings-alerts").empty();
-        // grant history permissions
-        if (this.checked) {
-            chrome.permissions.request({
-                permissions: ["history"]
-            }, function(success) {
-                if (success) {
-                    $(".settings-perm-history").removeClass("has-warning").addClass("has-success");
-                    $("#settings-history-limit").prop("disabled", false).parent().removeClass("text-muted");
-                    $("#settings-history-limit-value").parent().removeClass("text-muted");
-                } else {
-                    var text = "Permission denied for history.";
-                    $("#settings-alerts").append($("<div/>").addClass("alert alert-danger").text(text));
-                    $(this).prop("checked", false);
-                }
-            });
-        } else {
-            $("#settings-history-limit").prop("disabled", true).parent().addClass("text-muted");
-            $("#settings-history-limit-value").parent().addClass("text-muted");
-        }
-    });
-    $("#settings-history-limit").on("input change", function(e) {
-        $("#settings-history-limit-value").text($(this).val());
-    });
-    // permission requests
-    $(".settings-perm input[type=checkbox]").change(function(e) {
-        $("#settings-alerts").empty();
-        // grant requried permissions for provider
-        var id = this.id;
-        let key = $("#" + id).closest(".settings-perm").data("key");
-        var perms = ajaxPerms[key];
-        if (!perms) {
-            let notifHost = settings.notifs[key].host;
-            if (notifHost) {
-                perms = [notifHost];
-            }
-        }
-        if (!perms) return;
-        if (this.checked) {
-            try {
-                chrome.permissions.request({
-                    origins: perms
-                }, function(success) {
-                    var check = $("#" + id);
-                    if (success) {
-                        check.closest(".settings-perm").removeClass("has-warning").addClass("has-success");
-                    } else {
-                        var text = "Permission denied for " + perms.join(", ") + ".";
-                        $("#settings-alerts").append($("<div/>").addClass("alert alert-danger").text(text));
-                        check.prop("checked", false).change();
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }
-    });
     // enable fields from checkbox selection
     $("#settings-notifs-gmail-enable").change(function(e) {
         $("#settings-notifs-gmail-accounts").prop("disabled", !this.checked);
@@ -2652,24 +2057,6 @@ $(document).ready(function() {
     $("#settings-general-timer-countdown").change(function(e) {
         $("#settings-general-timer-beep").prop("disabled", !this.checked)
                                             .parent().toggleClass("text-muted", !this.checked);
-    });
-    $("#settings-general-apps").change(function(e) {
-        $("#settings-alerts").empty();
-        // grant history permissions
-        if (this.checked) {
-            chrome.permissions.request({
-                permissions: ["management"]
-            }, function(success) {
-                if (success) {
-                    $(".settings-perm-management").removeClass("has-warning").addClass("has-success");
-                    $("#settings-general-apps").prop("disabled", false).parent().removeClass("text-muted");
-                } else {
-                    var text = "Permission denied for management.";
-                    $("#settings-alerts").append($("<div/>").addClass("alert alert-danger").text(text));
-                    $(this).prop("checked", false);
-                }
-            });
-        }
     });
     $("#settings-general-weather-show").change(function(e) {
         $("#settings-general-weather-location, #settings-general-weather-celsius").prop("disabled", !this.checked);
@@ -2827,39 +2214,6 @@ $(document).ready(function() {
             dragdrop: $("#settings-links-edit-dragdrop").prop("checked")
         };
         settings.links["behaviour"].dropdownmiddle = $("#settings-links-behaviour-dropdownmiddle").prop("checked");
-        settings.bookmarks["enable"] = $("#settings-bookmarks-enable").prop("checked");
-        if (!settings.bookmarks["enable"]) {
-            chrome.permissions.remove({
-                permissions: ["bookmarks"]
-            }, function(success) {
-                if (!success) revokeError = true;
-            });
-        }
-        settings.bookmarks["bookmarklets"] = $("#settings-bookmarks-bookmarklets").prop("checked");
-        settings.bookmarks["foldercontents"] = $("#settings-bookmarks-foldercontents").prop("checked");
-        settings.bookmarks["split"] = $("#settings-bookmarks-split").prop("checked");
-        settings.bookmarks["merge"] = $("#settings-bookmarks-merge").prop("checked");
-        settings.bookmarks["above"] = $("#settings-bookmarks-above").prop("checked");
-        settings.history["enable"] = $("#settings-history-enable").prop("checked");
-        if (!settings.history["enable"]) {
-            chrome.permissions.remove({
-                permissions: ["history"]
-            }, function(success) {
-                if (!success) revokeError = true;
-            });
-        }
-        settings.history["limit"] = parseInt($("#settings-history-limit").val());
-        var revoke = function revoke(key) {
-            try {
-                chrome.permissions.remove({
-                    origins: ajaxPerms[key]
-                }, function(success) {
-                    if (!success) revokeError = true;
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }
         var revokeError = false;
         settings.notifs["facebook"] = {
             enable: {
@@ -2979,19 +2333,6 @@ $(document).ready(function() {
         };
         settings.general["notepad"].show = $("#settings-general-notepad-show").prop("checked");
         settings.general["apps"] = $("#settings-general-apps").prop("checked");
-        if (!settings.general["apps"]) {
-            chrome.permissions.contains({
-                permissions: ["management"]
-            }, function(has) {
-                if (has) {
-                    chrome.permissions.remove({
-                        permissions: ["management"]
-                    }, function(success) {
-                        if (!success) revokeError = true;
-                    });
-                }
-            });
-        }
         settings.general["weather"] = {
             show: $("#settings-general-weather-show").prop("checked"),
             location: $("#settings-general-weather-location").val(),
