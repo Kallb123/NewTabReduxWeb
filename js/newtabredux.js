@@ -715,7 +715,7 @@ $(document).ready(function() {
     }
     // get weather
     var weatherCallbacks = [];
-    if (settings.general["weather"].show && !chrome.extension.inIncognitoContext) {
+    if (settings.general["weather"].show) {
         chrome.permissions.contains({
             origins: ajaxPerms["weather"]
         }, function(has) {
@@ -1654,7 +1654,7 @@ $(document).ready(function() {
     /*
     Apps: installed Chrome apps drop-down
     */
-    if (settings.general["apps"] && !chrome.extension.inIncognitoContext) {
+    if (settings.general["apps"]) {
         chrome.permissions.contains({
             permissions: ["management"]
         }, function(has) {
@@ -1692,7 +1692,7 @@ $(document).ready(function() {
     History: quick drop-down of recent pages
     */
     // only show if enabled and not in incognito
-    if (settings.history["enable"] && !chrome.extension.inIncognitoContext) {
+    if (settings.history["enable"]) {
         chrome.permissions.contains({
             permissions: ["history"]
         }, function(has) {
@@ -2349,8 +2349,6 @@ $(document).ready(function() {
             }
         });
     };
-    // only show if enabled and not in incognito
-    if (!chrome.extension.inIncognitoContext) basketRefresh();
     /*
     Settings: modal to customize links and options
     */
@@ -3320,8 +3318,6 @@ $(document).ready(function() {
         // open on links page
         $("#menu-links").click();
     }
-    // show incognito state
-    if (chrome.extension.inIncognitoContext) $(".incognito").removeClass("incognito");
     // fade in once all is loaded
     $(document.body).fadeIn();
     resizeAllGridItems();
