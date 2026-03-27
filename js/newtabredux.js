@@ -328,7 +328,7 @@ $(document).ready(function() {
                         if (!Number.isNaN(lastTime)) {
                             let hoursSinceNewPhoto = (new Date() - lastTime) / MILLISECONDS_TO_HOURS;
                             if (hoursSinceNewPhoto < UNSPLASH_REFRESH_INTERVAL_HOURS) {
-                                backgroundImage = lastImage.urls.full;
+                                backgroundImage = lastImage.urls.raw + `&w=${window.outerWidth}&dpr=${window.devicePixelRatio}`;
                             }
                         }
                         if (lastImage.lastQuery !== imageSetting) {
@@ -351,7 +351,7 @@ $(document).ready(function() {
                         dataType: "json",
                         success: function(resp, stat, xhr) {
                             let ajaxCSS = [];
-                            var backgroundImage = resp.urls.full;
+                            var backgroundImage = resp.urls.raw + `&w=${window.outerWidth}&dpr=${window.devicePixelRatio}`;
                             ajaxCSS.push("html {\n"
                                     + "    background-image: url(" + backgroundImage + ");\n"
                                     + "    background-repeat: " + (settings.style["background"].repeat ? "" : "no-") + "repeat;\n"
