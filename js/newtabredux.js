@@ -1143,7 +1143,7 @@ $(document).ready(function() {
                 })));
                 btnRootLeft.append(optsMenu);
                 group.append(btnRootLeft);
-                group.append($("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Button label").val(linkBtn.title).change(function(e) {
+                group.append($("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Button label").attr("title", "Menu Label").val(linkBtn.title).change(function(e) {
                     linkBtn.title = $(this).val();
                 }));
                 // right menus
@@ -1240,12 +1240,12 @@ $(document).ready(function() {
                             });
                             tr.append($("<td/>").attr("colspan", 3).append(title));
                         } else {
-                            var title = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Label").val(linkItem.title).change(function(e) {
+                            var title = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Label").attr("title", "Label").val(linkItem.title).change(function(e) {
                                 linkItem.title = $(this).val();
                             });
                             tr.append($("<td/>").append(title));
                             var linkGroup = $("<div/>").addClass("input-group");
-                            var url = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Link URL").val(linkItem.url).change(function(e) {
+                            var url = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Link URL").attr("title", "URL").val(linkItem.url).change(function(e) {
                                 linkItem.url = $(this).val();
                             })
                             linkGroup.append(url);
@@ -1268,6 +1268,10 @@ $(document).ready(function() {
                             linkItemRootRight.append(check);
                             linkGroup.append(linkItemRootRight);
                             tr.append($("<td/>").append(linkGroup));
+                            var favicon = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Favicon").attr("title", "Favicon").val(linkItem.favicon).change(function(e) {
+                                linkItem.favicon = $(this).val();
+                            });
+                            tr.append($("<td/>").append(favicon));
                         }
                         tbody.append(tr);
                     });
@@ -1313,7 +1317,7 @@ $(document).ready(function() {
                 }
                 var iconGroup = $("<div/>").addClass("input-group").css("width", "100%");
                 let favicon = linkBtn.favicon ? linkBtn.favicon : "";
-                var iconURL = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Favicon URL").val(favicon).change(function(e) {
+                var iconURL = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Favicon URL").attr("title", "Favicon").val(favicon).change(function(e) {
                     linkBtn.favicon = $(this).val();
                 })
                 iconGroup.append(iconURL);
