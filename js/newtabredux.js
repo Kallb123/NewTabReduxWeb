@@ -943,19 +943,43 @@ $(document).ready(function() {
                 var btn;
                 if (linkBtn.menu) {
                     btn = $("<div/>").addClass("btn-group btn-block");
-                    btn.append($("<button/>").addClass("btn btn-block btn-" + linkBtn.style + " dropdown-toggle").attr("data-toggle", "dropdown")
-                                                .text(linkBtn.title + " ").append($("<b/>").addClass("caret")));
+                    let innerHtml = "";
+                    if (settings.style.favicons && linkBtn.favicon) {
+                        let faviconURL = linkBtn.favicon;
+                        let favicon = `<img class="favicon" src="${faviconURL}" alt="Icon for link" style = "" onerror='this.style.visibility = "hidden"' width=16 height=16 />`;;
+                        innerHtml = `<div class="favicon-cell">${favicon} <span>${linkBtn.title}</span> <b class="caret"></b></div>`;
+                    } else {
+                        innerHtml = `${linkBtn.title} <b class="caret"></b>`;
+                    }
+                    btn.append($("<button/>")
+                            .addClass("btn btn-block btn-" + linkBtn.style + " dropdown-toggle")
+                            .attr("data-toggle", "dropdown")
+                            .html(innerHtml));
                     var menu = $("<ul/>").addClass("dropdown-menu");
                     // loop through menu items
                     var urls = [];
                     for (var k in linkBtn.menu) {
                         var linkItem = linkBtn.menu[k];
-                        if (typeof(linkItem) === "string") {
+                        if (typeof(linkItem) === "string") { // This is a divider as it is stored as "" whereas actual links are an object
                             if (k > 0) menu.append($("<li/>").addClass("divider"));
                             if (linkItem) menu.append($("<li/>").addClass("dropdown-header").text(linkItem));
                         } else {
                             if (!linkItem.title) linkItem.title = "";
-                            var item = $("<a/>").attr("href", linkItem.url).text(linkItem.title);
+                            let innerHtml = "";
+                            if (settings.style.favicons) {
+                                let faviconURL = "";
+                                if (linkItem.favicon) {
+                                    faviconURL = linkItem.favicon;
+                                } else {
+                                    let domain = extractHostname(linkItem.url);
+                                    faviconURL = `https://www.google.com/s2/favicons?domain=${domain}`;
+                                }
+                                let favicon = `<img class="favicon" src="${faviconURL}" alt="Icon for link" style = "" onerror='this.style.visibility = "hidden"' width=16 height=16 />`;;
+                                innerHtml = `<div class="favicon-cell">${favicon} <span>${linkItem.title}</span></div>`;
+                            } else {
+                                innerHtml = `${linkItem.title}`;
+                            }
+                            var item = $("<a/>").attr("href", linkItem.url).html(innerHtml);
                             // workaround for accessing Chrome and file URLs
                             for (var prefix of ["chrome", "chrome-extension", "file"]) {
                                 if (linkItem.url.substring(0, prefix.length + 3) === prefix + "://") {
@@ -1119,7 +1143,7 @@ $(document).ready(function() {
                 })));
                 btnRootLeft.append(optsMenu);
                 group.append(btnRootLeft);
-                group.append($("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Button label").val(linkBtn.title).change(function(e) {
+                group.append($("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Button label").attr("title", "Menu Label").val(linkBtn.title).change(function(e) {
                     linkBtn.title = $(this).val();
                 }));
                 // right menus
@@ -1216,12 +1240,12 @@ $(document).ready(function() {
                             });
                             tr.append($("<td/>").attr("colspan", 3).append(title));
                         } else {
-                            var title = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Label").val(linkItem.title).change(function(e) {
+                            var title = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Label").attr("title", "Label").val(linkItem.title).change(function(e) {
                                 linkItem.title = $(this).val();
                             });
                             tr.append($("<td/>").append(title));
                             var linkGroup = $("<div/>").addClass("input-group");
-                            var url = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Link URL").val(linkItem.url).change(function(e) {
+                            var url = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Link URL").attr("title", "URL").val(linkItem.url).change(function(e) {
                                 linkItem.url = $(this).val();
                             })
                             linkGroup.append(url);
@@ -1244,6 +1268,10 @@ $(document).ready(function() {
                             linkItemRootRight.append(check);
                             linkGroup.append(linkItemRootRight);
                             tr.append($("<td/>").append(linkGroup));
+                            var favicon = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Favicon").attr("title", "Favicon").val(linkItem.favicon).change(function(e) {
+                                linkItem.favicon = $(this).val();
+                            });
+                            tr.append($("<td/>").append(favicon));
                         }
                         tbody.append(tr);
                     });
@@ -1289,7 +1317,7 @@ $(document).ready(function() {
                 }
                 var iconGroup = $("<div/>").addClass("input-group").css("width", "100%");
                 let favicon = linkBtn.favicon ? linkBtn.favicon : "";
-                var iconURL = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Favicon URL").val(favicon).change(function(e) {
+                var iconURL = $("<input>").attr("type", "text").addClass("form-control").attr("placeholder", "Favicon URL").attr("title", "Favicon").val(favicon).change(function(e) {
                     linkBtn.favicon = $(this).val();
                 })
                 iconGroup.append(iconURL);
