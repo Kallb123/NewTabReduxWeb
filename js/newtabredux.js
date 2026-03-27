@@ -943,8 +943,18 @@ $(document).ready(function() {
                 var btn;
                 if (linkBtn.menu) {
                     btn = $("<div/>").addClass("btn-group btn-block");
-                    btn.append($("<button/>").addClass("btn btn-block btn-" + linkBtn.style + " dropdown-toggle").attr("data-toggle", "dropdown")
-                                                .text(linkBtn.title + " ").append($("<b/>").addClass("caret")));
+                    let innerHtml = "";
+                    if (settings.style.favicons && linkBtn.favicon) {
+                        let faviconURL = linkBtn.favicon;
+                        let favicon = `<img class="favicon" src="${faviconURL}" alt="Icon for link" style = "" onerror='this.style.visibility = "hidden"' width=16 height=16 />`;;
+                        innerHtml = `<div class="favicon-cell">${favicon} <span>${linkBtn.title}</span> <b class="caret"></b></div>`;
+                    } else {
+                        innerHtml = `${linkBtn.title} <b class="caret"></b>`;
+                    }
+                    btn.append($("<button/>")
+                            .addClass("btn btn-block btn-" + linkBtn.style + " dropdown-toggle")
+                            .attr("data-toggle", "dropdown")
+                            .html(innerHtml));
                     var menu = $("<ul/>").addClass("dropdown-menu");
                     // loop through menu items
                     var urls = [];
