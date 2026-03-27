@@ -349,7 +349,23 @@ $(document).ready(function() {
                         url: `https://api.unsplash.com/photos/random?client_id=ayAIqsDDYvD6bdwA00jgwlFKvMwBwF23i6ZudDqYhOA&content_filter=high${query}`,
                         // headers: handle.headers,
                         dataType: "json",
-                        success: function(resp, stat, xhr) {
+                        success: async function(resp, stat, xhr) {
+                            // Ensure the image isn't too large
+                            // if (resp.width * resp.height > 15000000) {
+                            //     console.log(`Background dimensions are too big ${resp.width}x${resp.height}`);
+                            //     return;
+                            // }
+                            // Check filesize
+                            // let headerResponse = await fetch(resp.urls.full, {
+                            //     method: 'GET',
+                            //     headers: {'X-HTTP-Method-Override': 'HEAD'}
+                            // });
+                            // let filesizeMb = headerResponse.headers.get("Content-Length") / (1024*1024);
+                            // if (filesizeMb > 10) {
+                            //     console.log(`Background filesize is too big ${filesizeMb}MB}`);
+                            //     return;
+                            // }
+
                             let ajaxCSS = [];
                             var backgroundImage = resp.urls.raw + `&w=${window.outerWidth}&dpr=${window.devicePixelRatio}`;
                             ajaxCSS.push("html {\n"
