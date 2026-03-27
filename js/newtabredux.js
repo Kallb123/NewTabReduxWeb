@@ -950,12 +950,26 @@ $(document).ready(function() {
                     var urls = [];
                     for (var k in linkBtn.menu) {
                         var linkItem = linkBtn.menu[k];
-                        if (typeof(linkItem) === "string") {
+                        if (typeof(linkItem) === "string") { // This is a divider as it is stored as "" whereas actual links are an object
                             if (k > 0) menu.append($("<li/>").addClass("divider"));
                             if (linkItem) menu.append($("<li/>").addClass("dropdown-header").text(linkItem));
                         } else {
                             if (!linkItem.title) linkItem.title = "";
-                            var item = $("<a/>").attr("href", linkItem.url).text(linkItem.title);
+                            let innerHtml = "";
+                            if (settings.style.favicons) {
+                                let faviconURL = "";
+                                if (linkItem.favicon) {
+                                    faviconURL = linkItem.favicon;
+                                } else {
+                                    let domain = extractHostname(linkItem.url);
+                                    faviconURL = `https://www.google.com/s2/favicons?domain=${domain}`;
+                                }
+                                let favicon = `<img class="favicon" src="${faviconURL}" alt="Icon for link" style = "" onerror='this.style.visibility = "hidden"' width=16 height=16 />`;;
+                                innerHtml = `<div class="favicon-cell">${favicon} <span>${linkItem.title}</span></div>`;
+                            } else {
+                                innerHtml = `${linkItem.title}`;
+                            }
+                            var item = $("<a/>").attr("href", linkItem.url).html(innerHtml);
                             // workaround for accessing Chrome and file URLs
                             for (var prefix of ["chrome", "chrome-extension", "file"]) {
                                 if (linkItem.url.substring(0, prefix.length + 3) === prefix + "://") {
