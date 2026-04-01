@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import LinkPanel from './LinkPanel.vue';
-import type { panel } from './LinkPanel.vue';
+import LinkPanel, { type panel } from './LinkPanel.vue';
 
 defineProps<{
   panels: panel[]
 }>()
+
 </script>
 
 <template>
