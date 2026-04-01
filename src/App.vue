@@ -28,11 +28,13 @@ provide('preferences', appData.preferences);
 </script>
 
 <template>
+  <div :class="{ 'link-buttons': appData.preferences.style.linkButtons }">
     <Background :background="appData.preferences.background"></Background>
     <Header></Header>
     <main>
       <LinkSpace :panels="appData.links" />
     </main>
+  </div>
 </template>
 
 <style scoped>
