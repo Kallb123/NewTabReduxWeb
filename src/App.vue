@@ -21,13 +21,6 @@ const applyTheme = () => {
   } else {
     html.style.colorScheme = theme;
   }
-  console.log(`Applied theme: ${theme}`);
-};
-
-const setTheme = (theme: 'light' | 'dark' | 'system') => {
-  console.log(`Setting theme to: ${theme}`);
-  appData.preferences.style.theme = theme;
-  applyTheme();
 };
 
 watch(appData, (newData) => {
@@ -54,7 +47,6 @@ onMounted(() => {
 });
 
 provide('preferences', appData.preferences);
-provide('setTheme', setTheme);
 </script>
 
 <template>
