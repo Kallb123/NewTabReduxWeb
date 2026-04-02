@@ -39,11 +39,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="entryWrapper">
-    <a ref="entryRef" class="entry" href="#" @click.prevent="dropdownToggle = !dropdownToggle">
-      <img v-if="preferences.style.favicons && group.favicon" :src="group.favicon" :alt="group.title" class="favicon" height="16" width="16" @error="handleImageError" />
-      <span>{{ group.title }} <span class="caret"></span></span>
-    </a>
+  <div ref="entryRef" class="entryWrapper">
+    <EntryLink :link="{ url: '#', title: group.title, favicon: group.favicon }" :group="true" @click.prevent="dropdownToggle = !dropdownToggle" />
     <div v-if="dropdownToggle" class="dropdown" @click.stop>
       <div v-for="(entry, index) in group.links" :key="index">
         <EntrySeperator v-if="typeof entry === 'string'" :title="entry" />
@@ -54,36 +51,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.caret {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  margin-left: 2px;
-  vertical-align: middle;
-  border-top: 4px dashed;
-  border-top: 4px solid\9;
-  border-right: 4px solid transparent;
-  border-left: 4px solid transparent;
-}
-
 .entryWrapper {
   position: relative;
-}
-
-.entry {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-}
-
-.favicon {
-  height: 16px;
-  margin-right: 4px;
-  width: 16px;
-}
-
-.entry > span {
-  flex-grow: 1;
 }
 
 .dropdown {
