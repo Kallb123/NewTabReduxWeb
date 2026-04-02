@@ -1,11 +1,14 @@
 export interface AppData {
   links: panel[];
-  preferences: {
-    background: string;
-    style: {
-        linkButtons: boolean;
-    }
-  };
+  preferences: Preferences;
+}
+
+export interface Preferences {
+  background: string;
+  style: {
+    favicons: boolean;
+    linkButtons: boolean;
+  }
 }
 
 export interface panel {

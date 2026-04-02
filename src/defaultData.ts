@@ -36,6 +36,7 @@ export const defaultData: AppData = {
   preferences: {
     background: '/bg.png',
     style: {
+      favicons: true,
       linkButtons: true,
     },
   },
