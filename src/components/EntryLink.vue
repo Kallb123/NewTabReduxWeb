@@ -38,7 +38,7 @@ const handleImageError = (event: Event) => {
 
 .favicon {
   height: 16px;
-  margin-right: 4px;
+  margin-right: 0.5em;
   width: 16px;
 }
 
