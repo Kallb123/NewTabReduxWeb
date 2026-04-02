@@ -8,6 +8,7 @@ export interface Preferences {
   style: {
     favicons: boolean;
     linkButtons: boolean;
+    theme: 'light' | 'dark' | 'system';
   }
 }
 

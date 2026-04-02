@@ -38,6 +38,7 @@ export const defaultData: AppData = {
     style: {
       favicons: true,
       linkButtons: true,
+      theme: 'system',
     },
   },
 };
