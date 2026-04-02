@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { inject, ref } from 'vue';
+import { inject, ref, onMounted, onUnmounted } from 'vue';
 import EntryLink from './EntryLink.vue';
 import EntrySeperator from './EntrySeperator.vue';
 import type { linkGroup, Preferences } from '@/types';
 
 const dropdownToggle = ref(false);
+const entryRef = ref<HTMLElement>();
 const preferences = inject<Preferences>('preferences')!;
 
 defineProps<{
@@ -15,10 +16,30 @@ const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement;
   img.style.visibility = 'hidden';
 };
+
+const closeDropdown = () => {
+  dropdownToggle.value = false;
+};
+
+const handleDocumentClick = (event: Event) => {
+  // Close dropdown if click is outside the current entry element
+  const target = event.target as HTMLElement;
+  if (entryRef.value && !entryRef.value.contains(target)) {
+    closeDropdown();
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleDocumentClick);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleDocumentClick);
+});
 </script>
 
 <template>
-  <a class="entry" href="#" @click="dropdownToggle = !dropdownToggle">
+  <a ref="entryRef" class="entry" href="#" @click.prevent="dropdownToggle = !dropdownToggle">
     <img v-if="preferences.style.favicons && group.favicon" :src="group.favicon" :alt="group.title" class="favicon" height="16" width="16" @error="handleImageError" />
     <span>{{ group.title }} <span class="caret"></span></span>
     <div v-if="dropdownToggle" class="dropdown" @click.stop>
@@ -56,7 +77,7 @@ const handleImageError = (event: Event) => {
   width: 16px;
 }
 
-.favicon + span {
+.entry > span {
   flex-grow: 1;
 }
 
@@ -67,6 +88,7 @@ const handleImageError = (event: Event) => {
   left: 0;
   margin: 0.5em 0.5em 0;
   position: absolute;
+  top: 2em;
   z-index: 10;
 }
 </style>
