@@ -44,7 +44,20 @@ const handleImageError = (event: Event) => {
 }
 
 .entry {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
   position: relative;
+}
+
+.favicon {
+  height: 16px;
+  margin-right: 4px;
+  width: 16px;
+}
+
+.favicon + span {
+  flex-grow: 1;
 }
 
 .dropdown {
