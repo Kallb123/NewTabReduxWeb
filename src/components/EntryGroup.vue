@@ -1,19 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { inject, ref } from 'vue';
 import EntryLink from './EntryLink.vue';
 import EntrySeperator from './EntrySeperator.vue';
-import type { linkGroup } from '@/types';
+import type { linkGroup, Preferences } from '@/types';
 
 const dropdownToggle = ref(false);
+const preferences = inject<Preferences>('preferences')!;
 
 defineProps<{
   group: linkGroup
 }>()
+
+const handleImageError = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  img.style.visibility = 'hidden';
+};
 </script>
 
 <template>
   <a class="entry" href="#" @click="dropdownToggle = !dropdownToggle">
-    {{ group.title }} <span class="caret"></span>
+    <img v-if="preferences.style.favicons && group.favicon" :src="group.favicon" :alt="group.title" class="favicon" height="16" width="16" @error="handleImageError" />
+    <span>{{ group.title }} <span class="caret"></span></span>
     <div v-if="dropdownToggle" class="dropdown" @click.stop>
       <div v-for="(entry, index) in group.links" :key="index">
         <EntrySeperator v-if="typeof entry === 'string'" :title="entry" />

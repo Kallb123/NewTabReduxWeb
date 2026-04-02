@@ -11,7 +11,6 @@ const faviconUrl = computed(() => {
 });
 
 const preferences = inject<Preferences>('preferences')!;
-// console.log('EntryLink preferences:', preferences);
 
 const { link } = defineProps<{
   link: link
