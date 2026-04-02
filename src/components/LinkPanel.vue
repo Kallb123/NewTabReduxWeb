@@ -2,22 +2,8 @@
 import EntryLink from './EntryLink.vue';
 import EntryGroup from './EntryGroup.vue';
 import EntrySeperator from './EntrySeperator.vue';
+import type { panel } from '@/types';
 
-export interface panel {
-  title: string
-  entries: panelEntry[]
-}
-export type panelEntry = link | linkGroup | string;
-export type groupEntry = link | string;
-export interface linkGroup {
-  title: string
-  links: groupEntry[]
-}
-export interface link {
-  title: string
-  url: string
-  type?: string
-}
 defineProps<{
   panel: panel
 }>()

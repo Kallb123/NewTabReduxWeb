@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { link } from './LinkPanel.vue';
+import type { link } from '@/types';
+
 
 defineProps<{
   link: link

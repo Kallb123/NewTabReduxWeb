@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { linkGroup } from './LinkPanel.vue';
 import EntryLink from './EntryLink.vue';
 import EntrySeperator from './EntrySeperator.vue';
+import type { linkGroup } from '@/types';
 
 const dropdownToggle = ref(false);
 
