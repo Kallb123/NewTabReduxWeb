@@ -39,16 +39,18 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <a ref="entryRef" class="entry" href="#" @click.prevent="dropdownToggle = !dropdownToggle">
-    <img v-if="preferences.style.favicons && group.favicon" :src="group.favicon" :alt="group.title" class="favicon" height="16" width="16" @error="handleImageError" />
-    <span>{{ group.title }} <span class="caret"></span></span>
+  <div class="entryWrapper">
+    <a ref="entryRef" class="entry" href="#" @click.prevent="dropdownToggle = !dropdownToggle">
+      <img v-if="preferences.style.favicons && group.favicon" :src="group.favicon" :alt="group.title" class="favicon" height="16" width="16" @error="handleImageError" />
+      <span>{{ group.title }} <span class="caret"></span></span>
+    </a>
     <div v-if="dropdownToggle" class="dropdown" @click.stop>
       <div v-for="(entry, index) in group.links" :key="index">
         <EntrySeperator v-if="typeof entry === 'string'" :title="entry" />
         <EntryLink v-else :link="entry" />
       </div>
     </div>
-  </a>
+  </div>
 </template>
 
 <style scoped>
@@ -64,11 +66,14 @@ onUnmounted(() => {
   border-left: 4px solid transparent;
 }
 
+.entryWrapper {
+  position: relative;
+}
+
 .entry {
   align-items: center;
   display: flex;
   justify-content: space-between;
-  position: relative;
 }
 
 .favicon {
