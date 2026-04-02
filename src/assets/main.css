@@ -9,6 +9,7 @@ a,
 }
 
 .entry {
+  background: var(--color-background);
   border: var(--color-border) solid 1px;
   color: var(--color-text);
   display: block;

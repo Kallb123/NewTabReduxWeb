@@ -47,20 +47,6 @@ defineProps<{
   left: 0;
   margin: 0.5em 0.5em 0;
   position: absolute;
-}
-
-.link {
-  border: var(--color-border) solid 1px;
-  border-radius: 3px;
-  color: var(--color-text);
-  display: block;
-  margin: 0.5em 0.5em 0;
-  padding: 0.5em 1em;
-  text-align: center;
-  text-decoration: none;
-}
-
-.link:last-child {
-  margin-bottom: 0.5em;
+  z-index: 10;
 }
 </style>
