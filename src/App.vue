@@ -3,7 +3,7 @@ import { reactive, onMounted, provide, watch, ref } from 'vue';
 import Background from './components/Background.vue';
 import Header from './components/Header.vue';
 import LinkSpace from './components/LinkSpace.vue';
-import type { AppData } from './types';
+import type { AppData, panel } from './types';
 import { defaultData } from './defaultData';
 import Settings from './components/Settings.vue';
 
@@ -59,7 +59,12 @@ provide('preferences', appData.preferences);
     <main>
       <LinkSpace :panels="appData.links" />
     </main>
-    <Settings v-if="settingsOpen" :isOpen="settingsOpen" :close="() => settingsOpen = false" />
+    <Settings
+      v-if="settingsOpen"
+      :links="appData.links"
+      :setLinks="(newLinks: panel[]) => { appData.links = newLinks }"
+      :close="() => settingsOpen = false"
+    />
   </div>
 </template>
 
