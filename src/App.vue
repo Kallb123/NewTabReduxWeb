@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { reactive, onMounted, provide, watch } from 'vue';
+import { reactive, onMounted, provide, watch, ref } from 'vue';
 import Background from './components/Background.vue';
 import Header from './components/Header.vue';
 import LinkSpace from './components/LinkSpace.vue';
 import type { AppData } from './types';
 import { defaultData } from './defaultData';
+import Settings from './components/Settings.vue';
 
 const appData = reactive<AppData>({ ...defaultData });
 console.log('AppData initialized:', appData);
@@ -46,16 +47,19 @@ onMounted(() => {
   applyTheme();
 });
 
+const settingsOpen = ref(false);
+
 provide('preferences', appData.preferences);
 </script>
 
 <template>
   <div :class="{ 'link-buttons': appData.preferences.style.linkButtons }">
     <Background :background="appData.preferences.background"></Background>
-    <Header></Header>
+    <Header :openSettings="() => settingsOpen = true"></Header>
     <main>
       <LinkSpace :panels="appData.links" />
     </main>
+    <Settings v-if="settingsOpen" :isOpen="settingsOpen" :close="() => settingsOpen = false" />
   </div>
 </template>
 

@@ -6,16 +6,10 @@ import type { linkGroup, Preferences } from '@/types';
 
 const dropdownToggle = ref(false);
 const entryRef = ref<HTMLElement>();
-const preferences = inject<Preferences>('preferences')!;
 
 defineProps<{
   group: linkGroup
 }>()
-
-const handleImageError = (event: Event) => {
-  const img = event.target as HTMLImageElement;
-  img.style.visibility = 'hidden';
-};
 
 const closeDropdown = () => {
   dropdownToggle.value = false;
