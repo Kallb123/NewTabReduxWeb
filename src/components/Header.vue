@@ -43,21 +43,24 @@ const toggleTheme = () => {
 <template>
   <header>
     <div ref="wrapperRef">
-      <a class="menuOpener" href="#" @click.prevent="dropdownToggle = !dropdownToggle">Menu</a>
+      <a class="menuOpener" href="#" @click.prevent="dropdownToggle = !dropdownToggle">
+        <font-awesome-icon icon="fa-solid fa-bars" />
+      </a>
       <div v-if="dropdownToggle" class="dropdown" @click.stop>
         <ul>
           <li>
-            <a href="#" @click.stop="() => { dropdownToggle = false; openSettings(); }">⚙️ Settings</a>
+            <a href="#" @click.stop="() => { dropdownToggle = false; openSettings(); }"><font-awesome-icon icon="fa-solid fa-cog" /> Settings</a>
           </li>
           <li>
             <a href="#" @click.prevent="toggleTheme" :title="`Current theme: ${preferences.style.theme}`">
-              {{ preferences.style.theme === 'light' ? '☀️' : preferences.style.theme === 'dark' ? '🌙' : '⚙️' }} Switch Theme
+              <font-awesome-icon v-if="preferences.style.theme === 'light'" icon="fa-regular fa-sun" />
+              <font-awesome-icon v-else-if="preferences.style.theme === 'dark'" icon="fa-regular fa-moon" />
+              <font-awesome-icon v-else icon="fa-solid fa-computer" /> Switch Theme
             </a>
           </li>
           <li>Import</li>
           <li>Export</li>
         </ul>
-        <
       </div>
     </div>
   </header>
