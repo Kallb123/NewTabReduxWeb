@@ -5,6 +5,10 @@ import LinkPanel from './LinkPanel.vue';
 defineProps<{
   panels: panel[]
   movePanel: (index: number, direction: 'start' | 'left' | 'right' | 'end') => void
+  addPanelBefore: (index: number) => void
+  addPanelAfter: (index: number) => void
+  duplicatePanel: (index: number) => void
+  deletePanel: (index: number) => void
 }>()
 
 </script>
@@ -18,6 +22,10 @@ defineProps<{
       :panelIndex="index"
       :totalPanels="panels.length"
       :movePanel="movePanel"
+      :addPanelBefore="addPanelBefore"
+      :addPanelAfter="addPanelAfter"
+      :duplicatePanel="duplicatePanel"
+      :deletePanel="deletePanel"
     />
   </div>
 </template>
