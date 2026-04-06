@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import EntryLink from './EntryLink.vue';
 import EntryGroup from './EntryGroup.vue';
 import EntrySeperator from './EntrySeperator.vue';
+import PanelSettings from './PanelSettings.vue';
 import type { panel } from '@/types';
 
 const props = defineProps<{
@@ -13,6 +14,7 @@ const props = defineProps<{
 }>()
 
 const dropdownOpen = ref(false);
+const settingsOpen = ref(false);
 const wrapperRef = ref<HTMLElement>();
 
 const handleDocumentClick = (event: Event) => {
@@ -75,10 +77,21 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
                   Move to End <font-awesome-icon icon="fa-solid fa-angles-right" />
                 </button>
               </li>
+              <li class="dropdown-separator"></li>
+              <li>
+                <button @click="dropdownOpen = false; settingsOpen = true">
+                  <font-awesome-icon icon="fa-solid fa-gear" /> Edit Panel
+                </button>
+              </li>
             </ul>
           </div>
         </div>
       </header>
+      <PanelSettings
+        v-if="settingsOpen"
+        :panel="panel"
+        :close="() => settingsOpen = false"
+      />
       <div class="panel-body">
         <div v-for="(entry, index) in panel.entries" :key="index">
           <EntrySeperator v-if="typeof entry === 'string'" :title="entry" />
@@ -161,6 +174,10 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
 .move-dropdown button:disabled {
   color: var(--color-border);
   cursor: default;
+}
+.dropdown-separator {
+  border-top: var(--color-border) solid 1px;
+  margin: 4px 0;
 }
 </style>
 
