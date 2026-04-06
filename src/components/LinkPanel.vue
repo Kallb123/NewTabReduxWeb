@@ -11,6 +11,10 @@ const props = defineProps<{
   panelIndex: number
   totalPanels: number
   movePanel: (index: number, direction: 'start' | 'left' | 'right' | 'end') => void
+  addPanelBefore: (index: number) => void
+  addPanelAfter: (index: number) => void
+  duplicatePanel: (index: number) => void
+  deletePanel: (index: number) => void
 }>()
 
 const dropdownOpen = ref(false);
@@ -43,6 +47,26 @@ onUnmounted(() => {
 const move = (direction: 'start' | 'left' | 'right' | 'end') => {
   dropdownOpen.value = false;
   props.movePanel(props.panelIndex, direction);
+};
+
+const addBefore = () => {
+  dropdownOpen.value = false;
+  props.addPanelBefore(props.panelIndex);
+};
+
+const addAfter = () => {
+  dropdownOpen.value = false;
+  props.addPanelAfter(props.panelIndex);
+};
+
+const duplicate = () => {
+  dropdownOpen.value = false;
+  props.duplicatePanel(props.panelIndex);
+};
+
+const deleteSelf = () => {
+  dropdownOpen.value = false;
+  props.deletePanel(props.panelIndex);
 };
 </script>
 
@@ -81,6 +105,28 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
               <li>
                 <button @click="dropdownOpen = false; settingsOpen = true">
                   <font-awesome-icon icon="fa-solid fa-gear" /> Edit Panel
+                </button>
+              </li>
+              <li class="separator"></li>
+              <li>
+                <button @click="addBefore">
+                  <font-awesome-icon icon="fa-solid fa-plus" /> Add Panel Before
+                </button>
+              </li>
+              <li>
+                <button @click="addAfter">
+                  <font-awesome-icon icon="fa-solid fa-plus" /> Add Panel After
+                </button>
+              </li>
+              <li>
+                <button @click="duplicate">
+                  <font-awesome-icon icon="fa-solid fa-copy" /> Duplicate Panel
+                </button>
+              </li>
+              <li class="separator"></li>
+              <li>
+                <button class="btn-danger" :disabled="totalPanels <= 1" @click="deleteSelf">
+                  <font-awesome-icon icon="fa-solid fa-trash" /> Delete Panel
                 </button>
               </li>
             </ul>
@@ -174,6 +220,16 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
 .move-dropdown button:disabled {
   color: var(--color-border);
   cursor: default;
+}
+.move-dropdown li.separator {
+  border-top: var(--color-border) solid 1px;
+  margin: 0.25em 0;
+}
+.move-dropdown button.btn-danger {
+  color: #c0392b;
+}
+.move-dropdown button.btn-danger:hover {
+  background-color: hsla(5, 60%, 50%, 0.15);
 }
 </style>
 

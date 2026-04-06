@@ -63,6 +63,27 @@ const movePanel = (index: number, direction: 'start' | 'left' | 'right' | 'end')
   links.splice(target, 0, removed[0]);
 };
 
+const addPanelBefore = (index: number) => {
+  if (index < 0 || index > appData.links.length) return;
+  appData.links.splice(index, 0, { title: 'New Panel', entries: [] });
+};
+
+const addPanelAfter = (index: number) => {
+  if (index < 0 || index >= appData.links.length) return;
+  appData.links.splice(index + 1, 0, { title: 'New Panel', entries: [] });
+};
+
+const duplicatePanel = (index: number) => {
+  const source = appData.links[index];
+  if (source === undefined) return;
+  appData.links.splice(index + 1, 0, JSON.parse(JSON.stringify(source)));
+};
+
+const deletePanel = (index: number) => {
+  if (appData.links.length <= 1) return;
+  appData.links.splice(index, 1);
+};
+
 provide('preferences', appData.preferences);
 </script>
 
@@ -71,7 +92,7 @@ provide('preferences', appData.preferences);
     <Background :background="appData.preferences.background"></Background>
     <Header :openSettings="() => settingsOpen = true"></Header>
     <main>
-      <LinkSpace :panels="appData.links" :movePanel="movePanel" />
+      <LinkSpace :panels="appData.links" :movePanel="movePanel" :addPanelBefore="addPanelBefore" :addPanelAfter="addPanelAfter" :duplicatePanel="duplicatePanel" :deletePanel="deletePanel" />
     </main>
     <Settings
       v-if="settingsOpen"
