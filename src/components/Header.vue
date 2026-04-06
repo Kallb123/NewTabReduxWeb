@@ -49,7 +49,7 @@ const toggleTheme = () => {
       <div v-if="dropdownToggle" class="dropdown" @click.stop>
         <ul>
           <li>
-            <a href="#" @click.stop="() => { dropdownToggle = false; openSettings(); }"><font-awesome-icon icon="fa-solid fa-cog" /> Settings</a>
+            <a href="#" @click.stop.prevent="() => { dropdownToggle = false; openSettings(); }"><font-awesome-icon icon="fa-solid fa-cog" /> Settings</a>
           </li>
           <li>
             <a href="#" @click.prevent="toggleTheme" :title="`Current theme: ${preferences.style.theme}`">
