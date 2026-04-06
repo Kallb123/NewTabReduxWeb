@@ -49,6 +49,20 @@ onMounted(() => {
 
 const settingsOpen = ref(false);
 
+const movePanel = (index: number, direction: 'start' | 'left' | 'right' | 'end') => {
+  const links = appData.links;
+  const last = links.length - 1;
+  let target: number;
+  if (direction === 'start') target = 0;
+  else if (direction === 'left') target = Math.max(0, index - 1);
+  else if (direction === 'right') target = Math.min(last, index + 1);
+  else target = last;
+  if (target === index) return;
+  const removed = links.splice(index, 1);
+  if (removed[0] === undefined) return;
+  links.splice(target, 0, removed[0]);
+};
+
 provide('preferences', appData.preferences);
 </script>
 
@@ -57,7 +71,7 @@ provide('preferences', appData.preferences);
     <Background :background="appData.preferences.background"></Background>
     <Header :openSettings="() => settingsOpen = true"></Header>
     <main>
-      <LinkSpace :panels="appData.links" />
+      <LinkSpace :panels="appData.links" :movePanel="movePanel" />
     </main>
     <Settings
       v-if="settingsOpen"

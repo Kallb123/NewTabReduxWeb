@@ -4,13 +4,21 @@ import LinkPanel from './LinkPanel.vue';
 
 defineProps<{
   panels: panel[]
+  movePanel: (index: number, direction: 'start' | 'left' | 'right' | 'end') => void
 }>()
 
 </script>
 
 <template>
   <div id="links">
-    <LinkPanel v-for="panel in panels" :key="panel.title" :panel="panel" />
+    <LinkPanel
+      v-for="(panel, index) in panels"
+      :key="panel.title"
+      :panel="panel"
+      :panelIndex="index"
+      :totalPanels="panels.length"
+      :movePanel="movePanel"
+    />
   </div>
 </template>
 
