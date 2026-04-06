@@ -77,7 +77,7 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
                   Move to End <font-awesome-icon icon="fa-solid fa-angles-right" />
                 </button>
               </li>
-              <li class="dropdown-separator"></li>
+              <li class="separator"></li>
               <li>
                 <button @click="dropdownOpen = false; settingsOpen = true">
                   <font-awesome-icon icon="fa-solid fa-gear" /> Edit Panel
@@ -174,10 +174,6 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
 .move-dropdown button:disabled {
   color: var(--color-border);
   cursor: default;
-}
-.dropdown-separator {
-  border-top: var(--color-border) solid 1px;
-  margin: 4px 0;
 }
 </style>
 
