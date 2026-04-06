@@ -118,9 +118,13 @@ const move = (direction: 'start' | 'left' | 'right' | 'end') => {
   padding: 0.25em 0.5em;
   border-radius: 3px;
   line-height: 1;
+  visibility: hidden;
 }
 .move-btn:hover {
   background-color: hsla(160, 100%, 37%, 0.2);
+}
+.panel-heading:hover .move-btn {
+  visibility: visible;
 }
 .move-dropdown {
   background: var(--color-background-soft);
