@@ -19,18 +19,20 @@ const save = () => {
 <template>
   <div class="overlay" @click="close">
     <div class="settingsPanel" @click.stop>
-      <div class="field">
-        <input
-          id="panel-title"
-          v-model="panelDupe.title"
-          placeholder="Panel Title"
-          type="text"
-          @keydown.enter="save"
-          @keydown.escape="close"
-          autofocus
-        />
+      <div class="modalHeader">
+        <div class="field">
+          <input
+            id="panel-title"
+            v-model="panelDupe.title"
+            placeholder="Panel Title"
+            type="text"
+            @keydown.enter="save"
+            @keydown.escape="close"
+            autofocus
+          />
+        </div>
       </div>
-      <div v-for="(entry, index) in panelDupe.entries" :key="index">
+      <div v-for="(entry, index) in panelDupe.entries" :key="index" class="entryWrapper">
         <div v-if="typeof entry === 'string'" class="field">
           <input
             v-model="panelDupe.entries[index]"
@@ -60,7 +62,7 @@ const save = () => {
             @keydown.escape="close"
           />
           <div v-for="(groupEntry, groupIndex) in (panelDupe.entries[index] as linkGroup).links" :key="groupIndex" class="field">
-            <div v-if="typeof groupEntry === 'string'" class="field">
+            <div v-if="typeof groupEntry === 'string'" class="field entryGroupWrapper">
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as string)"
                 placeholder="Separator Title"
@@ -70,7 +72,7 @@ const save = () => {
                 @keydown.escape="close"
               />
             </div>
-            <div v-else> 
+            <div v-else class="entryGroupWrapper"> 
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).title"
                 placeholder="Link Title"
@@ -124,7 +126,6 @@ const save = () => {
             @keydown.escape="close"
           />
         </div>
-        <div v-if="index < panel.entries.length - 1" class="separator"></div>
       </div>
 
       <div class="actions">
@@ -150,7 +151,6 @@ const save = () => {
   background: var(--color-background);
   border: var(--color-border) solid 1px;
   border-radius: 8px;
-  padding: 20px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -160,20 +160,48 @@ const save = () => {
   overflow-y: auto;
 }
 
+.modalHeader {
+  border-bottom: var(--color-border) solid 1px;
+  font-size: 1.25rem;
+  margin-bottom: 1em;
+  padding: 1em 1em;
+}
+
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 16px;
 }
 
 .field input {
-  background: var(--color-background-soft);
+  background: var(--color-background);
   border: var(--color-border) solid 1px;
   border-radius: 3px;
   color: var(--color-text);
   font-size: 1em;
   padding: 0.4em 0.6em;
+}
+
+.entryWrapper {
+  background: var(--color-background-softish);
+  /* border: var(--color-border) solid 1px; */
+  border-radius: 3px;
+  margin: 0 0.5em 1em;
+  padding: 0.75em;
+}
+
+.entryGroupWrapper {
+  display: flex;
+  padding-left: 1em;
+}
+
+.entryGroupWrapper input {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.entryGroupWrapper input:last-child {
+  margin-right: 0;
 }
 
 .actions {
