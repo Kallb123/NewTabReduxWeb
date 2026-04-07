@@ -34,7 +34,9 @@ const deleteEntry = (index: number) => {
 };
 
 const moveGroupEntry = (panelIndex: number, groupIndex: number, direction: 'top' | 'up' | 'down' | 'bottom') => {
-  const links = (panelDupe.value.entries[panelIndex] as linkGroup).links;
+  const group = panelDupe.value.entries[panelIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
+  const links = group.links;
   const [entry] = links.splice(groupIndex, 1);
   if (!entry) return;
   if (direction === 'top') links.unshift(entry);
@@ -44,8 +46,10 @@ const moveGroupEntry = (panelIndex: number, groupIndex: number, direction: 'top'
 };
 
 const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
+  const group = panelDupe.value.entries[panelIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
   if (confirm('Are you sure you want to delete this entry?')) {
-    (panelDupe.value.entries[panelIndex] as linkGroup).links.splice(groupIndex, 1);
+    group.links.splice(groupIndex, 1);
   }
 };
 </script>
