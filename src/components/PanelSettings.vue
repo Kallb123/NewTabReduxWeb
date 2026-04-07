@@ -32,6 +32,22 @@ const deleteEntry = (index: number) => {
     panelDupe.value.entries.splice(index, 1);
   }
 };
+
+const moveGroupEntry = (panelIndex: number, groupIndex: number, direction: 'top' | 'up' | 'down' | 'bottom') => {
+  const links = (panelDupe.value.entries[panelIndex] as linkGroup).links;
+  const [entry] = links.splice(groupIndex, 1);
+  if (!entry) return;
+  if (direction === 'top') links.unshift(entry);
+  else if (direction === 'up') links.splice(groupIndex - 1, 0, entry);
+  else if (direction === 'down') links.splice(groupIndex + 1, 0, entry);
+  else links.push(entry);
+};
+
+const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
+  if (confirm('Are you sure you want to delete this entry?')) {
+    (panelDupe.value.entries[panelIndex] as linkGroup).links.splice(groupIndex, 1);
+  }
+};
 </script>
 
 <template>
@@ -97,6 +113,12 @@ const deleteEntry = (index: number) => {
           />
           <div v-for="(groupEntry, groupIndex) in (panelDupe.entries[index] as linkGroup).links" :key="groupIndex" class="field">
             <div v-if="typeof groupEntry === 'string'" class="field entryGroupWrapper">
+              <PanelSettingsEntryDropdown
+                :index="groupIndex"
+                :length="(panelDupe.entries[index] as linkGroup).links.length"
+                :moveEntry="(i, dir) => moveGroupEntry(index, i, dir)"
+                :deleteEntry="(i) => deleteGroupEntry(index, i)"
+              />
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as string)"
                 placeholder="Separator Title"
@@ -107,6 +129,12 @@ const deleteEntry = (index: number) => {
               />
             </div>
             <div v-else class="entryGroupWrapper"> 
+              <PanelSettingsEntryDropdown
+                :index="groupIndex"
+                :length="(panelDupe.entries[index] as linkGroup).links.length"
+                :moveEntry="(i, dir) => moveGroupEntry(index, i, dir)"
+                :deleteEntry="(i) => deleteGroupEntry(index, i)"
+              />
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).title"
                 placeholder="Link Title"
