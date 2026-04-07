@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { link, linkGroup, panel } from '@/types';
+import Dropdown from './Dropdown.vue';
+import PanelSettingsEntryDropdown from './PanelSettingsEntryDropdown.vue';
 
 const props = defineProps<{
   panel: panel;
@@ -13,6 +15,22 @@ const save = () => {
   props.panel.title = panelDupe.value.title.trim() || props.panel.title;
   props.panel.entries = panelDupe.value.entries;
   props.close();
+};
+
+const moveEntry = (index: number, direction: 'top' | 'up' | 'down' | 'bottom') => {
+  const entries = panelDupe.value.entries;
+  const [entry] = entries.splice(index, 1);
+  if (!entry) return;
+  if (direction === 'top') entries.unshift(entry);
+  else if (direction === 'up') entries.splice(index - 1, 0, entry);
+  else if (direction === 'down') entries.splice(index + 1, 0, entry);
+  else entries.push(entry);
+};
+
+const deleteEntry = (index: number) => {
+  if (confirm('Are you sure you want to delete this entry?')) {
+    panelDupe.value.entries.splice(index, 1);
+  }
 };
 </script>
 
@@ -34,25 +52,41 @@ const save = () => {
       </div>
       <div v-for="(entry, index) in panelDupe.entries" :key="index" class="entryWrapper">
         <div v-if="typeof entry === 'string'" class="field">
-          <input
-            v-model="panelDupe.entries[index]"
-            placeholder="Separator Title"
-            title="Separator Title"
-            type="text"
-            @keydown.enter="save"
-            @keydown.escape="close"
-          />
+          <div class="entryTitleRow">
+            <PanelSettingsEntryDropdown
+              :index="index"
+              :length="panelDupe.entries.length"
+              :moveEntry="moveEntry"
+              :deleteEntry="deleteEntry"
+            />
+            <input
+              v-model="panelDupe.entries[index]"
+              placeholder="Separator Title"
+              title="Separator Title"
+              type="text"
+              @keydown.enter="save"
+              @keydown.escape="close"
+            />
+          </div>
         </div>
         <div v-else-if="'links' in entry" class="field">
           <!-- TODO: Be able to edit the title used for the group and favicon, as well as the links inside -->
-          <input
-            v-model="(panelDupe.entries[index] as linkGroup).title"
-            placeholder="Link Group Title"
-            title="Link Group Title"
-            type="text"
-            @keydown.enter="save"
-            @keydown.escape="close"
-          />
+          <div class="entryTitleRow">
+            <PanelSettingsEntryDropdown
+              :index="index"
+              :length="panelDupe.entries.length"
+              :moveEntry="moveEntry"
+              :deleteEntry="deleteEntry"
+            />
+            <input
+              v-model="(panelDupe.entries[index] as linkGroup).title"
+              placeholder="Link Group Title"
+              title="Link Group Title"
+              type="text"
+              @keydown.enter="save"
+              @keydown.escape="close"
+            />
+          </div>
           <input
             v-model="(panelDupe.entries[index] as linkGroup).favicon"
             placeholder="Link Group Favicon URL (optional)"
@@ -101,14 +135,22 @@ const save = () => {
           </div>
         </div>
         <div v-else class="field">
-          <input
-            v-model="(panelDupe.entries[index] as link).title"
-            placeholder="Link Title"
-            title="Link Title"
-            type="text"
-            @keydown.enter="save"
-            @keydown.escape="close"
-          />
+          <div class="entryTitleRow">
+            <PanelSettingsEntryDropdown
+              :index="index"
+              :length="panelDupe.entries.length"
+              :moveEntry="moveEntry"
+              :deleteEntry="deleteEntry"
+            />
+            <input
+              v-model="(panelDupe.entries[index] as link).title"
+              placeholder="Link Title"
+              title="Link Title"
+              type="text"
+              @keydown.enter="save"
+              @keydown.escape="close"
+            />
+          </div>
           <input
             v-model="(panelDupe.entries[index] as link).url"
             placeholder="Link URL"
@@ -188,6 +230,69 @@ const save = () => {
   border-radius: 3px;
   margin: 0 0.5em 1em;
   padding: 0.75em;
+}
+
+.entryTitleRow {
+  display: flex;
+}
+
+.entryTitleRow input {
+  flex: 1;
+}
+
+.entryTypeLabel {
+  font-size: 0.8em;
+  color: var(--color-text-muted, var(--color-border));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.entry-menu-btn {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.entry-menu-btn:hover {
+  background-color: hsla(160, 100%, 37%, 0.2);
+}
+
+:deep(.dropdown-menu) button {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  display: block;
+  padding: 0.75em 1em;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
+}
+
+:deep(.dropdown-menu) button:hover:not(:disabled) {
+  background-color: hsla(160, 100%, 37%, 0.2);
+}
+
+:deep(.dropdown-menu) button:disabled {
+  color: var(--color-border);
+  cursor: default;
+}
+
+:deep(.dropdown-menu) li.separator {
+  border-top: var(--color-border) solid 1px;
+  margin: 0.25em 0;
+}
+
+:deep(.dropdown-menu) button.btn-danger {
+  color: #c0392b;
+}
+
+:deep(.dropdown-menu) button.btn-danger:hover {
+  background-color: hsla(5, 60%, 50%, 0.15);
 }
 
 .entryGroupWrapper {
