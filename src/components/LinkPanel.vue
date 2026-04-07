@@ -65,8 +65,10 @@ const duplicate = () => {
 };
 
 const deleteSelf = () => {
-  dropdownOpen.value = false;
-  props.deletePanel(props.panelIndex);
+  if (confirm(`Are you sure you want to delete the panel "${props.panel.title}"? This action cannot be undone.`)) {
+    dropdownOpen.value = false;
+    props.deletePanel(props.panelIndex);
+  }
 };
 </script>
 
@@ -93,18 +95,18 @@ const deleteSelf = () => {
               </li>
               <li>
                 <button :disabled="panelIndex === totalPanels - 1" @click="move('right')">
-                  Move Right <font-awesome-icon icon="fa-solid fa-angle-right" />
+                  <font-awesome-icon icon="fa-solid fa-angle-right" /> Move Right
                 </button>
               </li>
               <li>
                 <button :disabled="panelIndex === totalPanels - 1" @click="move('end')">
-                  Move to End <font-awesome-icon icon="fa-solid fa-angles-right" />
+                  <font-awesome-icon icon="fa-solid fa-angles-right" /> Move to End
                 </button>
               </li>
               <li class="separator"></li>
               <li>
                 <button @click="dropdownOpen = false; settingsOpen = true">
-                  <font-awesome-icon icon="fa-solid fa-gear" /> Edit Panel
+                  <font-awesome-icon icon="fa-solid fa-pencil" /> Edit Panel
                 </button>
               </li>
               <li class="separator"></li>
