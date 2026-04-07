@@ -261,40 +261,6 @@ const deleteEntry = (index: number) => {
   background-color: hsla(160, 100%, 37%, 0.2);
 }
 
-:deep(.dropdown-menu) button {
-  background: none;
-  border: none;
-  color: var(--color-text);
-  cursor: pointer;
-  display: block;
-  padding: 0.75em 1em;
-  text-align: left;
-  width: 100%;
-  white-space: nowrap;
-}
-
-:deep(.dropdown-menu) button:hover:not(:disabled) {
-  background-color: hsla(160, 100%, 37%, 0.2);
-}
-
-:deep(.dropdown-menu) button:disabled {
-  color: var(--color-border);
-  cursor: default;
-}
-
-:deep(.dropdown-menu) li.separator {
-  border-top: var(--color-border) solid 1px;
-  margin: 0.25em 0;
-}
-
-:deep(.dropdown-menu) button.btn-danger {
-  color: #c0392b;
-}
-
-:deep(.dropdown-menu) button.btn-danger:hover {
-  background-color: hsla(5, 60%, 50%, 0.15);
-}
-
 .entryGroupWrapper {
   display: flex;
   padding-left: 1em;
