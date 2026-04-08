@@ -116,7 +116,7 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
             @keydown.escape="close"
           />
           <div v-for="(groupEntry, groupIndex) in (panelDupe.entries[index] as linkGroup).links" :key="groupIndex" class="field">
-            <div v-if="typeof groupEntry === 'string'" class="field entryGroupWrapper">
+            <div v-if="typeof groupEntry === 'string'" class="entryGroupWrapper">
               <PanelSettingsEntryDropdown
                 :index="groupIndex"
                 :length="(panelDupe.entries[index] as linkGroup).links.length"
