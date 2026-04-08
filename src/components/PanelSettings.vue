@@ -32,6 +32,26 @@ const deleteEntry = (index: number) => {
     panelDupe.value.entries.splice(index, 1);
   }
 };
+
+const moveGroupEntry = (panelIndex: number, groupIndex: number, direction: 'top' | 'up' | 'down' | 'bottom') => {
+  const group = panelDupe.value.entries[panelIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
+  const links = group.links;
+  const [entry] = links.splice(groupIndex, 1);
+  if (!entry) return;
+  if (direction === 'top') links.unshift(entry);
+  else if (direction === 'up') links.splice(groupIndex - 1, 0, entry);
+  else if (direction === 'down') links.splice(groupIndex + 1, 0, entry);
+  else links.push(entry);
+};
+
+const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
+  const group = panelDupe.value.entries[panelIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
+  if (confirm('Are you sure you want to delete this entry?')) {
+    group.links.splice(groupIndex, 1);
+  }
+};
 </script>
 
 <template>
@@ -96,7 +116,13 @@ const deleteEntry = (index: number) => {
             @keydown.escape="close"
           />
           <div v-for="(groupEntry, groupIndex) in (panelDupe.entries[index] as linkGroup).links" :key="groupIndex" class="field">
-            <div v-if="typeof groupEntry === 'string'" class="field entryGroupWrapper">
+            <div v-if="typeof groupEntry === 'string'" class="entryGroupWrapper">
+              <PanelSettingsEntryDropdown
+                :index="groupIndex"
+                :length="(panelDupe.entries[index] as linkGroup).links.length"
+                :moveEntry="(i, dir) => moveGroupEntry(index, i, dir)"
+                :deleteEntry="(i) => deleteGroupEntry(index, i)"
+              />
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as string)"
                 placeholder="Separator Title"
@@ -106,7 +132,13 @@ const deleteEntry = (index: number) => {
                 @keydown.escape="close"
               />
             </div>
-            <div v-else class="entryGroupWrapper"> 
+            <div v-else class="entryGroupWrapper entryGroupLink">
+              <PanelSettingsEntryDropdown
+                :index="groupIndex"
+                :length="(panelDupe.entries[index] as linkGroup).links.length"
+                :moveEntry="(i, dir) => moveGroupEntry(index, i, dir)"
+                :deleteEntry="(i) => deleteGroupEntry(index, i)"
+              />
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).title"
                 placeholder="Link Title"
@@ -273,6 +305,17 @@ const deleteEntry = (index: number) => {
 
 .entryGroupWrapper input:last-child {
   margin-right: 0;
+}
+
+@media (max-width: 550px) {
+  .entryGroupLink {
+    flex-wrap: wrap;
+  }
+
+  .entryGroupLink input:nth-of-type(n+2) {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
 }
 
 .actions {
