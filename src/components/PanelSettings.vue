@@ -52,6 +52,30 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
     group.links.splice(groupIndex, 1);
   }
 };
+
+const addLink = () => {
+  panelDupe.value.entries.push({ title: '', url: '' });
+};
+
+const addLinkGroup = () => {
+  panelDupe.value.entries.push({ title: '', links: [] });
+};
+
+const addSeparator = () => {
+  panelDupe.value.entries.push('');
+};
+
+const addGroupLink = (entryIndex: number) => {
+  const group = panelDupe.value.entries[entryIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
+  group.links.push({ title: '', url: '' });
+};
+
+const addGroupSeparator = (entryIndex: number) => {
+  const group = panelDupe.value.entries[entryIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
+  group.links.push('');
+};
 </script>
 
 <template>
@@ -165,6 +189,14 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
               />
             </div>
           </div>
+          <div class="groupActions">
+            <button type="button" class="btn btn-secondary" @click="addGroupLink(index)">
+              <font-awesome-icon icon="fa-solid fa-plus" /> Add Link
+            </button>
+            <button type="button" class="btn btn-secondary" @click="addGroupSeparator(index)">
+              <font-awesome-icon icon="fa-solid fa-minus" /> Add Separator
+            </button>
+          </div>
         </div>
         <div v-else class="field">
           <div class="entryTitleRow">
@@ -203,8 +235,21 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
       </div>
 
       <div class="actions">
-        <button type="button" @click="close">Cancel</button>
-        <button type="button" @click="save">Save</button>
+        <div class="addActions">
+          <button type="button" class="btn btn-secondary" @click="addLink">
+            <font-awesome-icon icon="fa-solid fa-plus" /> Add Link
+          </button>
+          <button type="button" class="btn btn-secondary" @click="addLinkGroup">
+            <font-awesome-icon icon="fa-solid fa-folder-plus" /> Add Link Group
+          </button>
+          <button type="button" class="btn btn-secondary" @click="addSeparator">
+            <font-awesome-icon icon="fa-solid fa-minus" /> Add Separator
+          </button>
+        </div>
+        <div class="saveActions">
+          <button type="button" class="btn btn-secondary" @click="close">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="save">Save</button>
+        </div>
       </div>
     </div>
   </div>
@@ -222,6 +267,10 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
 }
 
 .settingsPanel {
+  --color-primary: hsla(160, 100%, 37%, 1);
+  --color-primary-dark: hsla(160, 100%, 30%, 1);
+  --color-primary-subtle: hsla(160, 100%, 37%, 0.15);
+  --color-primary-border: hsla(160, 100%, 37%, 0.5);
   background: var(--color-background);
   border: var(--color-border) solid 1px;
   border-radius: 8px;
@@ -290,7 +339,7 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
 }
 
 .entry-menu-btn:hover {
-  background-color: hsla(160, 100%, 37%, 0.2);
+  background-color: var(--color-primary-subtle);
 }
 
 .entryGroupWrapper {
@@ -320,8 +369,61 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  margin-top: 12px;
+  margin: 12px 0.5em 0.75em;
+}
+
+.addActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.saveActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.groupActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  padding-left: 1em;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875em;
+  padding: 0.4em 0.75em;
+  transition: background-color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary-dark);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background: var(--color-background);
+  border-color: var(--color-border-hover, var(--color-border));
+  color: var(--color-text);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-primary-subtle);
+  border-color: var(--color-primary-border);
 }
 </style>
