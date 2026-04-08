@@ -132,7 +132,7 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
                 @keydown.escape="close"
               />
             </div>
-            <div v-else class="entryGroupWrapper"> 
+            <div v-else class="entryGroupWrapper entryGroupLink">
               <PanelSettingsEntryDropdown
                 :index="groupIndex"
                 :length="(panelDupe.entries[index] as linkGroup).links.length"
@@ -305,6 +305,17 @@ const deleteGroupEntry = (panelIndex: number, groupIndex: number) => {
 
 .entryGroupWrapper input:last-child {
   margin-right: 0;
+}
+
+@media (max-width: 550px) {
+  .entryGroupLink {
+    flex-wrap: wrap;
+  }
+
+  .entryGroupLink input:nth-of-type(n+2) {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
 }
 
 .actions {
