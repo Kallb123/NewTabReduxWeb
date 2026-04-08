@@ -4,8 +4,9 @@ import { inject, onMounted, onUnmounted, ref } from 'vue';
 
 const preferences = inject<Preferences>('preferences')!;
 
-const { openSettings } = defineProps<{
+const { openSettings, openAbout } = defineProps<{
   openSettings: () => void
+  openAbout: () => void
 }>()
 
 const dropdownToggle = ref(false);
@@ -60,6 +61,9 @@ const toggleTheme = () => {
           </li>
           <li>Import</li>
           <li>Export</li>
+          <li>
+            <a href="#" @click.stop.prevent="() => { dropdownToggle = false; openAbout(); }"><font-awesome-icon icon="fa-solid fa-circle-info" /> About</a>
+          </li>
         </ul>
       </div>
     </div>

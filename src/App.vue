@@ -6,6 +6,7 @@ import LinkSpace from './components/LinkSpace.vue';
 import type { AppData, panel } from './types';
 import { defaultData } from './defaultData';
 import Settings from './components/Settings.vue';
+import About from './components/About.vue';
 
 const appData = reactive<AppData>({ ...defaultData });
 console.log('AppData initialized:', appData);
@@ -48,6 +49,7 @@ onMounted(() => {
 });
 
 const settingsOpen = ref(false);
+const aboutOpen = ref(false);
 
 const movePanel = (index: number, direction: 'start' | 'left' | 'right' | 'end') => {
   const links = appData.links;
@@ -90,7 +92,7 @@ provide('preferences', appData.preferences);
 <template>
   <div :class="{ 'link-buttons': appData.preferences.style.linkButtons }">
     <Background :background="appData.preferences.background"></Background>
-    <Header :openSettings="() => settingsOpen = true"></Header>
+    <Header :openSettings="() => settingsOpen = true" :openAbout="() => aboutOpen = true"></Header>
     <main>
       <LinkSpace :panels="appData.links" :movePanel="movePanel" :addPanelBefore="addPanelBefore" :addPanelAfter="addPanelAfter" :duplicatePanel="duplicatePanel" :deletePanel="deletePanel" />
     </main>
@@ -99,6 +101,10 @@ provide('preferences', appData.preferences);
       :links="appData.links"
       :setLinks="(newLinks: panel[]) => { appData.links = newLinks }"
       :close="() => settingsOpen = false"
+    />
+    <About
+      v-if="aboutOpen"
+      :close="() => aboutOpen = false"
     />
   </div>
 </template>
