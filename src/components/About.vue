@@ -1,18 +1,49 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
+
 defineProps<{
   close: () => void;
 }>();
 
 const repoUrl = 'https://github.com/Kallb123/NewTabReduxWeb';
 
-const branches: { name: string; deployUrl: string }[] = [
-  { name: 'main', deployUrl: 'https://main.newtabreduxweb.pages.dev/' },
-  { name: 'feature/vue-rewrite', deployUrl: 'https://feature-vue-rewrite.newtabreduxweb.pages.dev/' },
-  { name: 'feature/restrict-large-background', deployUrl: 'https://feature-restrict-large-background.newtabreduxweb.pages.dev/' },
-  { name: 'copilot/add-about-modal-header-menu', deployUrl: 'https://copilot-add-about-modal-header-menu.newtabreduxweb.pages.dev/' },
-  { name: 'copilot/add-entry-dropdown-to-link-group', deployUrl: 'https://copilot-add-entry-dropdown-to-link-group.newtabreduxweb.pages.dev/' },
-  { name: 'copilot/add-panel-settings-dropdown-options', deployUrl: 'https://copilot-add-panel-settings-dropdown-options.newtabreduxweb.pages.dev/' },
-];
+interface Branch {
+  name: string;
+  deployUrl: string;
+}
+
+// Cloudflare Pages sanitises branch names for subdomain use:
+// non-alphanumeric chars → '-', consecutive '-' collapsed, leading/trailing '-' stripped, truncated to 28 chars, lowercased.
+const toCloudflareSubdomain = (branchName: string): string => {
+  return branchName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 28)
+    .replace(/-+$/g, '');
+};
+
+const branches = ref<Branch[]>([]);
+const loading = ref(true);
+const fetchError = ref('');
+
+onMounted(async () => {
+  try {
+    const response = await fetch('https://api.github.com/repos/Kallb123/NewTabReduxWeb/branches');
+    if (!response.ok) {
+      throw new Error(`GitHub API responded with status ${response.status}`);
+    }
+    const data: { name: string }[] = await response.json();
+    branches.value = data.map(({ name }) => ({
+      name,
+      deployUrl: `https://${toCloudflareSubdomain(name)}.newtabreduxweb.pages.dev/`,
+    }));
+  } catch (err) {
+    fetchError.value = err instanceof Error ? err.message : String(err);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
@@ -25,7 +56,9 @@ const branches: { name: string; deployUrl: string }[] = [
       </p>
 
       <h3>Branch Deployments</h3>
-      <ul>
+      <p v-if="loading" style="color: var(--color-text-muted, gray);">Loading branches…</p>
+      <p v-else-if="fetchError" style="color: red;">Failed to load branches: {{ fetchError }}</p>
+      <ul v-else>
         <li v-for="branch in branches" :key="branch.name">
           <a :href="branch.deployUrl" target="_blank" rel="noopener noreferrer">{{ branch.name }}</a>
         </li>
