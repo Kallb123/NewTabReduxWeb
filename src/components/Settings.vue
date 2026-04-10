@@ -171,12 +171,12 @@ const save = () => {
               Inline editing
             </label>
             <label class="checkbox-label">
-              <input type="checkbox" v-model="prefDraft.dragAndDrop" />
+              <input type="checkbox" v-model="prefDraft.dragAndDrop" disabled />
               Drag and drop
             </label>
             <label class="checkbox-label">
-              <input type="checkbox" v-model="prefDraft.middleClick" />
-              Middle-click opens links
+              <input type="checkbox" v-model="prefDraft.middleClick" disabled />
+              Middle-click opens all links in a group
             </label>
           </div>
         </div>
@@ -276,7 +276,7 @@ const save = () => {
           <div class="checkbox-group">
             <label class="checkbox-label"><input type="checkbox" v-model="prefDraft.style.favicons" /> Show favicons</label>
             <label class="checkbox-label"><input type="checkbox" v-model="prefDraft.style.linkButtons" /> Show links as buttons</label>
-            <label class="checkbox-label"><input type="checkbox" v-model="prefDraft.style.fixedTopBar" /> Fixed top bar</label>
+            <label class="checkbox-label"><input type="checkbox" v-model="prefDraft.style.fixedTopBar" disabled /> Fixed top bar</label>
             <label class="checkbox-label"><input type="checkbox" v-model="prefDraft.style.fluidWidth" /> Fluid width</label>
           </div>
         </div>

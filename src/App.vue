@@ -32,6 +32,10 @@ watch(appData, (newData) => {
 
 watch(() => appData.preferences.style.theme, applyTheme, { flush: 'sync' });
 
+watch(() => appData.preferences.style.pageTitle, (title) => {
+  document.title = title || 'New Tab';
+}, { immediate: true });
+
 onMounted(() => {
   const stored = localStorage.getItem('newtabredux');
   if (stored) {
@@ -40,6 +44,9 @@ onMounted(() => {
       appData.links = parsed.links;
       appData.preferences.background = { ...appData.preferences.background, ...parsed.preferences?.background };
       appData.preferences.style = { ...appData.preferences.style, ...parsed.preferences?.style };
+      appData.preferences.inlineEditing = parsed.preferences?.inlineEditing ?? appData.preferences.inlineEditing;
+      appData.preferences.dragAndDrop = parsed.preferences?.dragAndDrop ?? appData.preferences.dragAndDrop;
+      appData.preferences.middleClick = parsed.preferences?.middleClick ?? appData.preferences.middleClick;
       console.log('AppData restored from localStorage:', appData);
     } catch (e) {
       console.error('Failed to parse localStorage data', e);
@@ -94,7 +101,7 @@ provide('preferences', appData.preferences);
   <div :class="{ 'link-buttons': appData.preferences.style.linkButtons }">
     <Background :background="appData.preferences.background" @update:lastImage="(v) => appData.preferences.background.lastImage = v"></Background>
     <Header :openSettings="() => settingsOpen = true" :openAbout="() => aboutOpen = true"></Header>
-    <main>
+    <main :class="{ 'fluid-width': appData.preferences.style.fluidWidth }">
       <LinkSpace :panels="appData.links" :movePanel="movePanel" :addPanelBefore="addPanelBefore" :addPanelAfter="addPanelAfter" :duplicatePanel="duplicatePanel" :deletePanel="deletePanel" />
     </main>
     <Settings
@@ -102,7 +109,7 @@ provide('preferences', appData.preferences);
       :links="appData.links"
       :preferences="appData.preferences"
       :setLinks="(newLinks: panel[]) => { appData.links = newLinks }"
-      :setPreferences="(newPreferences: Preferences) => {appData.preferences = newPreferences }"
+      :setPreferences="(newPreferences: Preferences) => { Object.assign(appData.preferences, newPreferences) }"
       :close="() => settingsOpen = false"
     />
     <About
@@ -113,4 +120,12 @@ provide('preferences', appData.preferences);
 </template>
 
 <style scoped>
+main {
+  margin: 0 auto;
+  max-width: 960px;
+}
+
+main.fluid-width {
+  max-width: none;
+}
 </style>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, inject } from 'vue';
 import EntryLink from './EntryLink.vue';
 import EntryGroup from './EntryGroup.vue';
 import EntrySeperator from './EntrySeperator.vue';
 import PanelSettings from './PanelSettings.vue';
-import type { panel } from '@/types';
+import type { panel, Preferences } from '@/types';
 
 const props = defineProps<{
   panel: panel
@@ -70,6 +70,8 @@ const deleteSelf = () => {
     props.deletePanel(props.panelIndex);
   }
 };
+
+const preferences = inject('preferences') as Preferences;
 </script>
 
 <template>
@@ -77,7 +79,7 @@ const deleteSelf = () => {
     <div class="panel">
       <header class="panel-heading">
         <span class="panel-title">{{ panel.title }}</span>
-        <div ref="wrapperRef" class="panel-move">
+        <div v-if="preferences.inlineEditing" ref="wrapperRef" class="panel-move">
           <button class="move-btn" @click.stop="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen" aria-haspopup="true" title="Move panel">
             <font-awesome-icon icon="fa-solid fa-chevron-down" />
           </button>
