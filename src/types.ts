@@ -4,12 +4,20 @@ export interface AppData {
 }
 
 export interface Preferences {
-  background: string;
+  background: Background;
   style: {
     favicons: boolean;
     linkButtons: boolean;
     theme: 'light' | 'dark' | 'system';
   }
+}
+export interface Background {
+  image: string;
+  repeat: boolean;
+  centre: boolean;
+  fixed: boolean;
+  stretch: boolean;
+  lastImage?: any;
 }
 
 export interface panel {

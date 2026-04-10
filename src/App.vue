@@ -3,7 +3,7 @@ import { reactive, onMounted, provide, watch, ref } from 'vue';
 import Background from './components/Background.vue';
 import Header from './components/Header.vue';
 import LinkSpace from './components/LinkSpace.vue';
-import type { AppData, panel } from './types';
+import type { AppData, panel, Preferences } from './types';
 import { defaultData } from './defaultData';
 import Settings from './components/Settings.vue';
 import About from './components/About.vue';
@@ -36,7 +36,7 @@ onMounted(() => {
   const stored = localStorage.getItem('newtabredux');
   if (stored) {
     try {
-      const parsed = JSON.parse(stored);
+      const parsed: AppData = JSON.parse(stored);
       appData.links = parsed.links;
       Object.assign(appData.preferences, parsed.preferences);
       console.log('AppData restored from localStorage:', appData);
@@ -99,7 +99,9 @@ provide('preferences', appData.preferences);
     <Settings
       v-if="settingsOpen"
       :links="appData.links"
+      :preferences="appData.preferences"
       :setLinks="(newLinks: panel[]) => { appData.links = newLinks }"
+      :setPreferences="(newPreferences: Preferences) => {appData.preferences = newPreferences }"
       :close="() => settingsOpen = false"
     />
     <About

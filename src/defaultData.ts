@@ -34,7 +34,13 @@ export const defaultData: AppData = {
     },
   ],
   preferences: {
-    background: '/bg.png',
+    background: {
+      image: '/bg.png',
+      repeat: true,
+      centre: true,
+      fixed: false,
+      stretch: false,
+    },
     style: {
       favicons: true,
       linkButtons: true,

@@ -1,35 +1,57 @@
 <script setup lang="ts">
-import type { panel } from '@/types';
+import type { panel, Preferences } from '@/types';
 import { ref, watch } from 'vue';
 
 const props = defineProps<{
   close: () => void;
   links: panel[];
+  preferences: Preferences;
   setLinks: (updatedLinks: panel[]) => void;
+  setPreferences: (updatedPreferences: Preferences) => void;
 }>();
 
 const linksJson = ref('');
-const parseError = ref('');
+const preferencesJson = ref('');
 
-const applyLinks = () => {
-  const parsed = parse(linksJson.value)
-  if (parsed) {
-    props.setLinks(parsed);
+const parseLinksError = ref('');
+const parsePreferencesError = ref('');
+
+const save = () => {
+  const parsedLinks = parseLinks(linksJson.value);
+  const parsedPreferences = parsePreferences(preferencesJson.value);
+  if (parsedLinks && parsedPreferences) {
+    props.setLinks(parsedLinks);
+    props.setPreferences(parsedPreferences);
     props.close();
   }
 };
 
-const parse: (jsonString: string) => panel[] | null = (jsonString) => {
+const parseLinks: (jsonString: string) => panel[] | null = (jsonString) => {
   try {
     const parsed: panel[] = JSON.parse(jsonString);
     if (!Array.isArray(parsed)) {
-      parseError.value = 'Expected an array for appData.links';
+      parseLinksError.value = 'Expected an array for appData.links';
       return null;
     }
-    parseError.value = '';
+    parseLinksError.value = '';
     return parsed;
   } catch (error) {
-    parseError.value = 'Invalid JSON: ' + (error instanceof Error ? error.message : String(error));
+    parseLinksError.value = 'Invalid JSON: ' + (error instanceof Error ? error.message : String(error));
+    return null;
+  }
+}
+
+const parsePreferences: (jsonString: string) => Preferences | null = (jsonString) => {
+  try {
+    const parsed: Preferences = JSON.parse(jsonString);
+    if (!parsed.background || !parsed.style) {
+      parsePreferencesError.value = 'Missing required fields in appData.preferences';
+      return null;
+    }
+    parsePreferencesError.value = '';
+    return parsed;
+  } catch (error) {
+    parsePreferencesError.value = 'Invalid JSON: ' + (error instanceof Error ? error.message : String(error));
     return null;
   }
 }
@@ -39,10 +61,24 @@ watch(
   (value) => {
     try {
       linksJson.value = JSON.stringify(value, null, 2);
-      parseError.value = '';
+      parseLinksError.value = '';
     } catch {
       linksJson.value = '';
-      parseError.value = 'Cannot serialize links to JSON';
+      parseLinksError.value = 'Cannot serialize links to JSON';
+    }
+  },
+  { immediate: true, deep: true }
+);
+
+watch(
+  () => props.preferences,
+  (value) => {
+    try {
+      preferencesJson.value = JSON.stringify(value, null, 2);
+      parsePreferencesError.value = '';
+    } catch {
+      preferencesJson.value = '';
+      parsePreferencesError.value = 'Cannot serialize preferences to JSON';
     }
   },
   { immediate: true, deep: true }
@@ -51,10 +87,19 @@ watch(
 watch(
   () => linksJson.value,
   (value) => {
-    parse(value);
+    parseLinks(value);
   },
   { immediate: true, deep: true }
 );
+
+watch(
+  () => preferencesJson.value,
+  (value) => {
+    parsePreferences(value);
+  },
+  { immediate: true, deep: true }
+);
+
 </script>
 
 <template>
@@ -70,11 +115,20 @@ watch(
         style="width: 100%; font-family: monospace;"
       ></textarea>
 
-      <p v-if="parseError" style="color: red; margin: 8px 0;">{{ parseError }}</p>
+      <label for="preferences-json">Edit preferences (JSON)</label>
+      <textarea
+        id="preferences-json"
+        v-model="preferencesJson"
+        rows="18"
+        style="width: 100%; font-family: monospace;"
+      ></textarea>
+
+      <p v-if="parseLinksError" style="color: red; margin: 8px 0;">{{ parseLinksError }}</p>
+      <p v-if="parsePreferencesError" style="color: red; margin: 8px 0;">{{ parsePreferencesError }}</p>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px;">
         <button type="button" @click="close">Cancel</button>
-        <button type="button" @click="applyLinks">Save</button>
+        <button type="button" @click="save">Save</button>
       </div>
     </div>
   </div>
