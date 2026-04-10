@@ -91,7 +91,7 @@ provide('preferences', appData.preferences);
 
 <template>
   <div :class="{ 'link-buttons': appData.preferences.style.linkButtons }">
-    <Background :background="appData.preferences.background"></Background>
+    <Background :background="appData.preferences.background" @update:lastImage="(v) => appData.preferences.background.lastImage = v"></Background>
     <Header :openSettings="() => settingsOpen = true" :openAbout="() => aboutOpen = true"></Header>
     <main>
       <LinkSpace :panels="appData.links" :movePanel="movePanel" :addPanelBefore="addPanelBefore" :addPanelAfter="addPanelAfter" :duplicatePanel="duplicatePanel" :deletePanel="deletePanel" />
