@@ -5,11 +5,10 @@ export interface AppData {
 
 export interface Preferences {
   background: Background;
-  style: {
-    favicons: boolean;
-    linkButtons: boolean;
-    theme: 'light' | 'dark' | 'system';
-  }
+  style: StyleSettings;
+  inlineEditing: boolean;
+  dragAndDrop: boolean;
+  middleClick: boolean;
 }
 export interface Background {
   image: string;
@@ -18,6 +17,15 @@ export interface Background {
   fixed: boolean;
   stretch: boolean;
   lastImage?: any;
+}
+export interface StyleSettings {
+    favicons: boolean;
+    fixedTopBar: boolean;
+    fluidWidth: boolean;
+    font: string;
+    linkButtons: boolean;
+    pageTitle: string;
+    theme: 'light' | 'dark' | 'system';
 }
 
 export interface panel {

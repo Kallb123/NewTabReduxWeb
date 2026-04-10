@@ -43,8 +43,15 @@ export const defaultData: AppData = {
     },
     style: {
       favicons: true,
+      fixedTopBar: true,
+      fluidWidth: true,
+      font: "",
       linkButtons: true,
+      pageTitle: "New Tab Redux",
       theme: 'system',
     },
+    inlineEditing: true,
+    dragAndDrop: false,
+    middleClick: false,
   },
 };

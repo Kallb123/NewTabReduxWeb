@@ -38,7 +38,8 @@ onMounted(() => {
     try {
       const parsed: AppData = JSON.parse(stored);
       appData.links = parsed.links;
-      Object.assign(appData.preferences, parsed.preferences);
+      appData.preferences.background = { ...appData.preferences.background, ...parsed.preferences?.background };
+      appData.preferences.style = { ...appData.preferences.style, ...parsed.preferences?.style };
       console.log('AppData restored from localStorage:', appData);
     } catch (e) {
       console.error('Failed to parse localStorage data', e);
