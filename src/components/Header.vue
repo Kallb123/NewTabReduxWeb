@@ -63,7 +63,10 @@ const handleFileChange = (event: Event) => {
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const raw = JSON.parse(reader.result as string);
+      if (typeof reader.result !== 'string') {
+        throw new Error('Could not read file contents');
+      }
+      const raw = JSON.parse(reader.result);
       const migrated = migrateData(raw);
       onImport(migrated);
       closeDropdown();
