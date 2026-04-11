@@ -80,7 +80,6 @@ const linksJsonError = ref('');
 const validateLinksJson = (json: string): panel[] | null => {
   try {
     const parsed = migratePanels(JSON.parse(json));
-    linksJson.value = JSON.stringify(parsed, null, 2);
     linksJsonError.value = '';
     return parsed;
   } catch (e) {
@@ -110,6 +109,9 @@ const canSave = computed(() => !linksJsonError.value);
 const save = () => {
   const parsedLinks = validateLinksJson(linksJson.value);
   if (!parsedLinks) return;
+
+  // Update the textarea to reflect any migrations applied to the JSON
+  linksJson.value = JSON.stringify(parsedLinks, null, 2);
 
   // Preserve the live lastImage if the image source is unchanged, so a
   // freshly-fetched image isn't lost. Otherwise clear it to trigger re-fetch.
