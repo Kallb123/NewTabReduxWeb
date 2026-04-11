@@ -2,6 +2,7 @@
 import type { panel, Preferences } from '@/types';
 import { ref, computed } from 'vue';
 import Dropdown from './Dropdown.vue';
+import { migratePanels } from '@/utils/migration';
 
 const props = defineProps<{
   close: () => void;
@@ -78,11 +79,8 @@ const linksJsonError = ref('');
 
 const validateLinksJson = (json: string): panel[] | null => {
   try {
-    const parsed: panel[] = JSON.parse(json);
-    if (!Array.isArray(parsed)) {
-      linksJsonError.value = 'Expected an array for links';
-      return null;
-    }
+    const parsed = migratePanels(JSON.parse(json));
+    linksJson.value = JSON.stringify(parsed, null, 2);
     linksJsonError.value = '';
     return parsed;
   } catch (e) {

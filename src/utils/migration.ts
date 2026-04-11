@@ -67,6 +67,19 @@ type OldFormat = {
 // ---------------------------------------------------------------------------
 
 /**
+ * Runs all migration steps on a raw panels array (the value stored in the
+ * "Panels" textarea in Settings). Applies the same structural migrations as
+ * migrateData but scoped to the panels array only.
+ */
+export function migratePanels(raw: unknown): panel[] {
+  if (!Array.isArray(raw)) {
+    throw new Error('Expected an array for links');
+  }
+  const migrated = migratePanelLinksToEntries({ links: raw });
+  return migrated.links as panel[];
+}
+
+/**
  * Runs all migration steps on raw imported data, in order.
  * Add new migration functions to extend for future format changes.
  */
