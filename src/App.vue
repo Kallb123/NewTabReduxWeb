@@ -7,6 +7,7 @@ import type { AppData, panel, Preferences } from './types';
 import { defaultData } from './defaultData';
 import Settings from './components/Settings.vue';
 import About from './components/About.vue';
+import { migrateData } from './utils/migration';
 
 const appData = reactive<AppData>({ ...defaultData });
 console.log('AppData initialized:', appData);
@@ -40,7 +41,7 @@ onMounted(() => {
   const stored = localStorage.getItem('newtabredux');
   if (stored) {
     try {
-      const parsed: AppData = JSON.parse(stored);
+      const parsed = migrateData(JSON.parse(stored));
       appData.links = parsed.links;
       appData.preferences.background = { ...appData.preferences.background, ...parsed.preferences?.background };
       appData.preferences.style = { ...appData.preferences.style, ...parsed.preferences?.style };
@@ -58,6 +59,27 @@ onMounted(() => {
 
 const settingsOpen = ref(false);
 const aboutOpen = ref(false);
+
+const handleExport = () => {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const json = JSON.stringify(appData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `newtabredux-export-${timestamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+const handleImport = (data: AppData) => {
+  appData.links = data.links;
+  appData.preferences.background = { ...appData.preferences.background, ...data.preferences?.background };
+  appData.preferences.style = { ...appData.preferences.style, ...data.preferences?.style };
+  appData.preferences.inlineEditing = data.preferences?.inlineEditing ?? appData.preferences.inlineEditing;
+  appData.preferences.dragAndDrop = data.preferences?.dragAndDrop ?? appData.preferences.dragAndDrop;
+  appData.preferences.middleClick = data.preferences?.middleClick ?? appData.preferences.middleClick;
+};
 
 const movePanel = (index: number, direction: 'start' | 'left' | 'right' | 'end') => {
   const links = appData.links;
@@ -100,7 +122,7 @@ provide('preferences', appData.preferences);
 <template>
   <div :class="{ 'link-buttons': appData.preferences.style.linkButtons }">
     <Background :background="appData.preferences.background" @update:lastImage="(v) => appData.preferences.background.lastImage = v"></Background>
-    <Header :openSettings="() => settingsOpen = true" :openAbout="() => aboutOpen = true"></Header>
+    <Header :openSettings="() => settingsOpen = true" :openAbout="() => aboutOpen = true" :onExport="handleExport" :onImport="handleImport"></Header>
     <main :class="{ 'fluid-width': appData.preferences.style.fluidWidth }">
       <LinkSpace :panels="appData.links" :movePanel="movePanel" :addPanelBefore="addPanelBefore" :addPanelAfter="addPanelAfter" :duplicatePanel="duplicatePanel" :deletePanel="deletePanel" />
     </main>
