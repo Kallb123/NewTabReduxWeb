@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import type { Preferences } from '@/types';
+import type { AppData, Preferences } from '@/types';
 import { inject, onMounted, onUnmounted, ref } from 'vue';
+import { migrateData } from '@/utils/migration';
 
 const preferences = inject<Preferences>('preferences')!;
 
-const { openSettings, openAbout } = defineProps<{
+const { openSettings, openAbout, onExport, onImport } = defineProps<{
   openSettings: () => void
   openAbout: () => void
+  onExport: () => void
+  onImport: (data: AppData) => void
 }>()
 
 const dropdownToggle = ref(false);
 const wrapperRef = ref<HTMLElement>();
+const fileInputRef = ref<HTMLInputElement>();
+const importError = ref<string | null>(null);
 
 const closeDropdown = () => {
   dropdownToggle.value = false;
@@ -39,6 +44,38 @@ const toggleTheme = () => {
   const nextIndex = (currentIndex + 1) % themes.length;
   preferences.style.theme = themes[nextIndex] ?? "system";
 };
+
+const triggerImport = () => {
+  importError.value = null;
+  fileInputRef.value?.click();
+};
+
+const triggerExport = () => {
+  dropdownToggle.value = false;
+  onExport();
+};
+
+const handleFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const raw = JSON.parse(reader.result as string);
+      const migrated = migrateData(raw);
+      onImport(migrated);
+      closeDropdown();
+    } catch (e) {
+      importError.value = e instanceof Error ? e.message : 'Failed to import file';
+    } finally {
+      // Reset file input so the same file can be re-selected if needed
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+};
 </script>
 
 <template>
@@ -59,13 +96,25 @@ const toggleTheme = () => {
               <font-awesome-icon v-else icon="fa-solid fa-computer" /> Switch Theme
             </a>
           </li>
-          <li>Import</li>
-          <li>Export</li>
+          <li>
+            <a href="#" @click.stop.prevent="triggerImport"><font-awesome-icon icon="fa-solid fa-file-import" /> Import</a>
+          </li>
+          <li>
+            <a href="#" @click.stop.prevent="triggerExport"><font-awesome-icon icon="fa-solid fa-file-export" /> Export</a>
+          </li>
           <li>
             <a href="#" @click.stop.prevent="() => { dropdownToggle = false; openAbout(); }"><font-awesome-icon icon="fa-solid fa-circle-info" /> About</a>
           </li>
         </ul>
+        <p v-if="importError" class="import-error">{{ importError }}</p>
       </div>
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept=".json,application/json"
+        style="display: none"
+        @change="handleFileChange"
+      />
     </div>
   </header>
 </template>
@@ -116,5 +165,12 @@ li {
 
 a:hover {
   background-color: hsla(160, 100%, 37%, 0.2);
+}
+
+.import-error {
+  color: var(--color-danger, #c00);
+  font-size: 0.85em;
+  margin: 0;
+  padding: 0.5em 1.5em;
 }
 </style>
