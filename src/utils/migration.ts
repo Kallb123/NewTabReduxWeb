@@ -6,6 +6,7 @@ import { defaultData } from '@/defaultData';
 // ---------------------------------------------------------------------------
 
 type MaybeOldPanel = {
+  buttons?: OldButton[];
   links?: unknown[];
   entries?: unknown[];
   title: string;
@@ -75,10 +76,14 @@ export function migratePanels(raw: unknown): panel[] {
   if (!Array.isArray(raw)) {
     throw new Error('Expected an array for panels');
   }
-  const migrated = migratePanelLinksToEntries({ links: raw });
+  let data: MaybeOldAppData = { links: raw };
+  // Step 1: convert panel.buttons → panel.entries (very old per-panel format)
+  data = migratePanelButtonsToEntries(data);
+  // Step 2: rename panel.links → panel.entries (intermediate format)
+  data = migratePanelLinksToEntries(data);
   // migratePanelLinksToEntries only renames `links` → `entries` on each panel
   // and returns the same array, so the cast is safe.
-  return migrated.links as panel[];
+  return data.links as panel[];
 }
 
 /**
@@ -199,6 +204,25 @@ function convertOldMenuItem(item: OldMenuItem): groupEntry {
     url: item.url ?? '',
     favicon: item.favicon ?? '',
   };
+}
+
+/**
+ * Migration: panel objects in the very old format had a `buttons` property
+ * instead of `entries`. Convert `buttons` → `entries` using convertOldButton
+ * on any panel that has `buttons` but not `entries`.
+ */
+function migratePanelButtonsToEntries(data: MaybeOldAppData): MaybeOldAppData {
+  if (!Array.isArray(data.links)) return data;
+
+  const migratedPanels = (data.links as MaybeOldPanel[]).map((panel: MaybeOldPanel) => {
+    if ('buttons' in panel && !('entries' in panel)) {
+      const { buttons, ...rest } = panel;
+      return { ...rest, entries: (buttons ?? []).map(convertOldButton) };
+    }
+    return panel;
+  });
+
+  return { ...data, links: migratedPanels };
 }
 
 /**
