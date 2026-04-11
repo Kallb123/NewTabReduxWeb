@@ -278,9 +278,9 @@ const addGroupSeparator = (entryIndex: number) => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(75%, calc(100vw - 1rem));
   max-height: 80vh;
   overflow-y: auto;
+  width: min(52em, calc(100vw - 1rem));
 }
 
 .modalHeader {
@@ -433,5 +433,13 @@ const addGroupSeparator = (entryIndex: number) => {
 .btn-secondary:hover {
   background-color: var(--color-primary-subtle);
   border-color: var(--color-primary-border);
+}
+
+/* ── Mobile ── */
+@media (max-width: 540px) {
+  .settingsPanel {
+    max-height: 95vh;
+    padding: 16px 14px 12px;
+  }
 }
 </style>
