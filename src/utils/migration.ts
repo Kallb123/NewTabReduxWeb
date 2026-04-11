@@ -34,11 +34,13 @@ type OldButton = {
   url?: string;
   menu?: OldMenuItem[];
   style?: string;
+  favicon?: string;
 };
 
 type OldMenuItem = {
   title?: string;
   url?: string;
+  favicon?: string;
 };
 
 type OldStyle = {
@@ -131,6 +133,9 @@ function migrateOldFormatToAppData(raw: Record<string, unknown>): MaybeOldAppDat
     stretch: oldStyle.background?.stretch ?? defaults.background.stretch,
     lastImage: oldStyle.background?.lastImage ?? undefined,
   };
+  if (background.image.endsWith('bg.png')) {
+    background.image = '/bg.png';
+  }
 
   const style: StyleSettings = {
     font: oldStyle.font ?? defaults.style.font,
@@ -159,12 +164,14 @@ function convertOldButton(button: OldButton): panelEntry {
     return {
       title: button.title ?? '',
       links: button.menu.map(convertOldMenuItem),
+      favicon: button.favicon ?? '',
     };
   }
   // Simple link
   return {
     title: button.title ?? '',
     url: button.url ?? '',
+    favicon: button.favicon ?? '',
   };
 }
 
@@ -175,6 +182,7 @@ function convertOldMenuItem(item: OldMenuItem): groupEntry {
   return {
     title: item.title ?? '',
     url: item.url ?? '',
+    favicon: item.favicon ?? '',
   };
 }
 
