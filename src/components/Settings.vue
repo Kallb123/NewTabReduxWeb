@@ -328,7 +328,7 @@ const save = () => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 52em;
+  width: min(52em, calc(100vw - 1rem));
 }
 
 /* â”€â”€ Header & tabs â”€â”€ */
@@ -597,5 +597,21 @@ const save = () => {
 
 .btn-addon {
   border-radius: 0 4px 4px 0;
+}
+
+/* ── Mobile ── */
+@media (max-width: 540px) {
+  .settings-panel {
+    max-height: 95vh;
+    padding: 16px 14px 12px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .field-label {
+    padding-top: 0;
+  }
 }
 </style>

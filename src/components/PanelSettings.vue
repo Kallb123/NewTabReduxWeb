@@ -278,7 +278,7 @@ const addGroupSeparator = (entryIndex: number) => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 75%;
+  width: min(75%, calc(100vw - 1rem));
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -364,6 +364,14 @@ const addGroupSeparator = (entryIndex: number) => {
   .entryGroupLink input:nth-of-type(n+2) {
     flex-basis: 100%;
     margin-right: 0;
+  }
+
+  .modalHeader {
+    padding: 0.75em;
+  }
+
+  .entryWrapper {
+    margin: 0 0 0.75em;
   }
 }
 
