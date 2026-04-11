@@ -73,9 +73,11 @@ type OldFormat = {
  */
 export function migratePanels(raw: unknown): panel[] {
   if (!Array.isArray(raw)) {
-    throw new Error('Expected an array for links');
+    throw new Error('Expected an array for panels');
   }
   const migrated = migratePanelLinksToEntries({ links: raw });
+  // migratePanelLinksToEntries only renames `links` → `entries` on each panel
+  // and returns the same array, so the cast is safe.
   return migrated.links as panel[];
 }
 
