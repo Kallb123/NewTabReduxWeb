@@ -35,6 +35,7 @@ defineProps<{
   display: grid;
   grid-gap: 10px;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-auto-rows: 10px;
   padding: 15px;
 }
 

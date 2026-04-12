@@ -20,10 +20,26 @@ const props = defineProps<{
 const dropdownOpen = ref(false);
 const settingsOpen = ref(false);
 const wrapperRef = ref<HTMLElement>();
+const panelRef = ref<HTMLElement>();
+
+const resizeGridItem = () => {
+  const wrapper = wrapperRef.value;
+  const panel = panelRef.value;
+  const grid = wrapper?.parentElement;
+  if (!wrapper || !panel || !grid) return;
+  const rowHeight = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-auto-rows'));
+  const rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue('grid-row-gap'));
+  const rowSpan = Math.ceil((panel.getBoundingClientRect().height + rowGap) / (rowHeight + rowGap));
+  wrapper.style.gridRowEnd = `span ${rowSpan}`;
+};
+
+let resizeObserver: ResizeObserver | null = null;
+
+const dropdownRef = ref<HTMLElement>();
 
 const handleDocumentClick = (event: Event) => {
   const target = event.target as HTMLElement;
-  if (wrapperRef.value && !wrapperRef.value.contains(target)) {
+  if (dropdownRef.value && !dropdownRef.value.contains(target)) {
     dropdownOpen.value = false;
   }
 };
@@ -37,11 +53,15 @@ const handleDocumentKeydown = (event: KeyboardEvent) => {
 onMounted(() => {
   document.addEventListener('click', handleDocumentClick);
   document.addEventListener('keydown', handleDocumentKeydown);
+  resizeObserver = new ResizeObserver(resizeGridItem);
+  if (panelRef.value) resizeObserver.observe(panelRef.value);
+  resizeGridItem();
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', handleDocumentClick);
   document.removeEventListener('keydown', handleDocumentKeydown);
+  resizeObserver?.disconnect();
 });
 
 const move = (direction: 'start' | 'left' | 'right' | 'end') => {
@@ -75,11 +95,11 @@ const preferences = inject('preferences') as Preferences;
 </script>
 
 <template>
-  <div class="panelWrapper">
-    <div class="panel">
+  <div ref="wrapperRef" class="panelWrapper">
+    <div ref="panelRef" class="panel">
       <header class="panel-heading">
         <span class="panel-title">{{ panel.title }}</span>
-        <div v-if="preferences.inlineEditing" ref="wrapperRef" class="panel-move">
+        <div v-if="preferences.inlineEditing" ref="dropdownRef" class="panel-move">
           <button class="move-btn" @click.stop="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen" aria-haspopup="true" title="Move panel">
             <font-awesome-icon icon="fa-solid fa-chevron-down" />
           </button>
