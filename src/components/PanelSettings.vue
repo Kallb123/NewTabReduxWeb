@@ -187,6 +187,13 @@ const addGroupSeparator = (entryIndex: number) => {
                 @keydown.enter="save"
                 @keydown.escape="close"
               />
+              <label class="checkboxLabel">
+                <input
+                  v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).newTab"
+                  type="checkbox"
+                />
+                Open in new tab
+              </label>
             </div>
           </div>
           <div class="groupActions">
@@ -231,6 +238,13 @@ const addGroupSeparator = (entryIndex: number) => {
             @keydown.enter="save"
             @keydown.escape="close"
           />
+          <label class="checkboxLabel">
+            <input
+              v-model="(panelDupe.entries[index] as link).newTab"
+              type="checkbox"
+            />
+            Open in new tab
+          </label>
         </div>
       </div>
 
@@ -402,6 +416,14 @@ const addGroupSeparator = (entryIndex: number) => {
   flex-wrap: wrap;
   margin-top: 6px;
   padding-left: 1em;
+}
+
+.checkboxLabel {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  font-size: 0.9em;
 }
 
 .btn {

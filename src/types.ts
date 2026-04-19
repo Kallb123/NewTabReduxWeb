@@ -41,6 +41,7 @@ export interface linkGroup {
 }
 export interface link {
   favicon?: string
+  newTab?: boolean
   title: string
   url: string
   type?: string
