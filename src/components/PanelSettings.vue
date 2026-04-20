@@ -382,6 +382,11 @@ const addGroupSeparator = (entryIndex: number) => {
     margin-right: 0;
   }
 
+  .entryGroupLink .entryUrlRow {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
+
   .modalHeader {
     padding: 0.75em;
   }
