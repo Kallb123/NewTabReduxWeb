@@ -171,14 +171,22 @@ const addGroupSeparator = (entryIndex: number) => {
                 @keydown.enter="save"
                 @keydown.escape="close"
               />
-              <input
-                v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).url"
-                placeholder="Link URL"
-                title="Link URL"
-                type="text"
-                @keydown.enter="save"
-                @keydown.escape="close"
-              />
+              <div class="entryUrlRow">
+                <input
+                  v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).url"
+                  placeholder="Link URL"
+                  title="Link URL"
+                  type="text"
+                  @keydown.enter="save"
+                  @keydown.escape="close"
+                />
+                <label class="newTabToggle" title="Open in new tab">
+                  <input
+                    v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).newTab"
+                    type="checkbox"
+                  />
+                </label>
+              </div>
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).favicon"
                 placeholder="Link Favicon URL (optional)"
@@ -215,14 +223,22 @@ const addGroupSeparator = (entryIndex: number) => {
               @keydown.escape="close"
             />
           </div>
-          <input
-            v-model="(panelDupe.entries[index] as link).url"
-            placeholder="Link URL"
-            title="Link URL"
-            type="text"
-            @keydown.enter="save"
-            @keydown.escape="close"
-          />
+          <div class="entryUrlRow">
+            <input
+              v-model="(panelDupe.entries[index] as link).url"
+              placeholder="Link URL"
+              title="Link URL"
+              type="text"
+              @keydown.enter="save"
+              @keydown.escape="close"
+            />
+            <label class="newTabToggle" title="Open in new tab">
+              <input
+                v-model="(panelDupe.entries[index] as link).newTab"
+                type="checkbox"
+              />
+            </label>
+          </div>
           <input
             v-model="(panelDupe.entries[index] as link).favicon"
             placeholder="Link Favicon URL (optional)"
@@ -356,12 +372,31 @@ const addGroupSeparator = (entryIndex: number) => {
   margin-right: 0;
 }
 
+.entryGroupWrapper .entryUrlRow {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.entryGroupWrapper .entryUrlRow > input {
+  margin-right: 0;
+  width: 0;
+}
+
 @media (max-width: 550px) {
   .entryGroupLink {
     flex-wrap: wrap;
   }
 
+  .entryGroupLink input:first-of-type {
+    margin-right: 0;
+  }
+
   .entryGroupLink input:nth-of-type(n+2) {
+    flex-basis: 100%;
+    margin-right: 0;
+  }
+
+  .entryGroupLink .entryUrlRow {
     flex-basis: 100%;
     margin-right: 0;
   }
@@ -402,6 +437,31 @@ const addGroupSeparator = (entryIndex: number) => {
   flex-wrap: wrap;
   margin-top: 6px;
   padding-left: 1em;
+}
+
+.entryUrlRow {
+  display: flex;
+}
+
+.entryUrlRow > input {
+  border-radius: 3px 0 0 3px;
+  flex: 1;
+}
+
+.newTabToggle {
+  align-items: center;
+  background: var(--color-background);
+  border: var(--color-border) solid 1px;
+  border-left: none;
+  border-radius: 0 3px 3px 0;
+  cursor: pointer;
+  display: flex;
+  padding: 0.2em 0.5em;
+}
+
+.newTabToggle:hover {
+  background-color: var(--color-primary-subtle);
+  border-color: var(--color-primary-border);
 }
 
 .btn {
