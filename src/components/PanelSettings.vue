@@ -372,6 +372,16 @@ const addGroupSeparator = (entryIndex: number) => {
   margin-right: 0;
 }
 
+.entryGroupWrapper .entryUrlRow {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.entryGroupWrapper .entryUrlRow > input {
+  margin-right: 0;
+  width: 0;
+}
+
 @media (max-width: 550px) {
   .entryGroupLink {
     flex-wrap: wrap;
@@ -448,16 +458,6 @@ const addGroupSeparator = (entryIndex: number) => {
 .newTabToggle:hover {
   background-color: var(--color-primary-subtle);
   border-color: var(--color-primary-border);
-}
-
-.entryGroupWrapper .entryUrlRow {
-  flex: 1;
-  margin-right: 10px;
-}
-
-.entryGroupWrapper .entryUrlRow > input {
-  margin-right: 0;
-  width: 0;
 }
 
 .btn {
