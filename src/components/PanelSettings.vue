@@ -387,6 +387,10 @@ const addGroupSeparator = (entryIndex: number) => {
     flex-wrap: wrap;
   }
 
+  .entryGroupLink input:first-of-type {
+    margin-right: 0;
+  }
+
   .entryGroupLink input:nth-of-type(n+2) {
     flex-basis: 100%;
     margin-right: 0;
