@@ -48,6 +48,38 @@ const parseGoogleEarthDetails = (data: { country?: string; region?: string; geoc
   };
 };
 
+const buildUnsplashUrl = (rawUrl: string) =>
+  `${rawUrl}&w=${window.outerWidth}&dpr=${Math.min(Math.round(window.devicePixelRatio), 2)}`;
+
+const resizeDataUri = (dataUri: string, maxWidth: number, maxHeight: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+      if (scale >= 1) {
+        resolve(dataUri);
+        return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(img.width * scale);
+      canvas.height = Math.floor(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('resizeDataUri: could not get 2D canvas context, using original image');
+        resolve(dataUri);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = (err) => {
+      console.error('resizeDataUri: failed to load image for resizing', err);
+      resolve(dataUri);
+    };
+    img.src = dataUri;
+  });
+};
+
 const fetchBackgroundImage = async () => {
   const imageSetting = props.background.image;
   if (!imageSetting) return;
@@ -62,7 +94,7 @@ const fetchBackgroundImage = async () => {
       if (!Number.isNaN(lastTime)) {
         const hoursSinceNewPhoto = (Date.now() - lastTime) / MILLISECONDS_TO_HOURS;
         if (hoursSinceNewPhoto < UNSPLASH_REFRESH_INTERVAL_HOURS) {
-          backgroundImage = lastImage.urls.full;
+          backgroundImage = buildUnsplashUrl(lastImage.urls.raw);
         }
       }
       if (lastImage.lastQuery !== imageSetting) {
@@ -85,7 +117,7 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          backgroundImage = data.urls.full;
+          backgroundImage = buildUnsplashUrl(data.urls.raw);
           emit('update:lastImage', {
             ...data,
             queryTime: new Date().toISOString(),
@@ -111,7 +143,7 @@ const fetchBackgroundImage = async () => {
       const now = new Date();
       const todaysDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       if (lastImage.nasaDate === todaysDate) {
-        backgroundImage = lastImage.hdurl;
+        backgroundImage = lastImage.url;
       }
     }
 
@@ -122,7 +154,7 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          backgroundImage = data.hdurl;
+          backgroundImage = data.url;
           emit('update:lastImage', {
             ...data,
             queryTime: new Date().toISOString(),
@@ -162,9 +194,11 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          backgroundImage = data.dataUri;
+          const resizedDataUri = await resizeDataUri(data.dataUri, window.outerWidth, window.outerHeight);
+          backgroundImage = resizedDataUri;
           emit('update:lastImage', {
             ...data,
+            dataUri: resizedDataUri,
             queryTime: new Date().toISOString(),
             lastQuery: imageSetting,
             googleEarth: true,
