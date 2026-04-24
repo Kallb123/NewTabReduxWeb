@@ -48,8 +48,22 @@ const parseGoogleEarthDetails = (data: { country?: string; region?: string; geoc
   };
 };
 
-const buildUnsplashUrl = (rawUrl: string) =>
-  `${rawUrl}&w=${window.outerWidth}&dpr=${Math.min(Math.round(window.devicePixelRatio), 2)}`;
+// Returns the true physical pixel dimensions of the screen.
+// screen.width/height represents the full display in CSS pixels (unaffected by the
+// mobile layout viewport illusion), and multiplying by devicePixelRatio converts to
+// actual hardware pixels. We take the max with outerWidth/outerHeight as a fallback
+// for environments that don't expose screen correctly.
+const getPhysicalDimensions = () => ({
+  width: Math.round(Math.max(screen.width, window.outerWidth) * window.devicePixelRatio),
+  height: Math.round(Math.max(screen.height, window.outerHeight) * window.devicePixelRatio),
+});
+
+// Pass the resolved physical pixel count directly as width with dpr=1 so the
+// Unsplash CDN serves an image sized to the real display, not the CSS layout viewport.
+const buildUnsplashUrl = (rawUrl: string) => {
+  const { width } = getPhysicalDimensions();
+  return `${rawUrl}&w=${width}&dpr=1`;
+};
 
 const resizeDataUri = (dataUri: string, maxWidth: number, maxHeight: number): Promise<string> => {
   return new Promise((resolve) => {
@@ -194,7 +208,8 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          const resizedDataUri = await resizeDataUri(data.dataUri, window.outerWidth, window.outerHeight);
+          const { width: physW, height: physH } = getPhysicalDimensions();
+          const resizedDataUri = await resizeDataUri(data.dataUri, physW, physH);
           backgroundImage = resizedDataUri;
           emit('update:lastImage', {
             ...data,
