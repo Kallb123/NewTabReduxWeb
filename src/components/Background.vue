@@ -48,6 +48,52 @@ const parseGoogleEarthDetails = (data: { country?: string; region?: string; geoc
   };
 };
 
+// Returns the true physical pixel dimensions of the screen.
+// screen.width/height represents the full display in CSS pixels (unaffected by the
+// mobile layout viewport illusion), and multiplying by devicePixelRatio converts to
+// actual hardware pixels. We take the max with outerWidth/outerHeight as a fallback
+// for environments that don't expose screen correctly.
+const getPhysicalDimensions = () => ({
+  width: Math.round(Math.max(screen.width, window.outerWidth) * window.devicePixelRatio),
+  height: Math.round(Math.max(screen.height, window.outerHeight) * window.devicePixelRatio),
+});
+
+// Pass the resolved physical pixel count directly as width with dpr=1 so the
+// Unsplash CDN serves an image sized to the real display, not the CSS layout viewport.
+const buildUnsplashUrl = (rawUrl: string) => {
+  const { width } = getPhysicalDimensions();
+  return `${rawUrl}&w=${width}&dpr=1`;
+};
+
+const resizeDataUri = (dataUri: string, maxWidth: number, maxHeight: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+      if (scale >= 1) {
+        resolve(dataUri);
+        return;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.floor(img.width * scale);
+      canvas.height = Math.floor(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('resizeDataUri: could not get 2D canvas context, using original image');
+        resolve(dataUri);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = (err) => {
+      console.error('resizeDataUri: failed to load image for resizing', err);
+      resolve(dataUri);
+    };
+    img.src = dataUri;
+  });
+};
+
 const fetchBackgroundImage = async () => {
   const imageSetting = props.background.image;
   if (!imageSetting) return;
@@ -62,7 +108,7 @@ const fetchBackgroundImage = async () => {
       if (!Number.isNaN(lastTime)) {
         const hoursSinceNewPhoto = (Date.now() - lastTime) / MILLISECONDS_TO_HOURS;
         if (hoursSinceNewPhoto < UNSPLASH_REFRESH_INTERVAL_HOURS) {
-          backgroundImage = lastImage.urls.full;
+          backgroundImage = buildUnsplashUrl(lastImage.urls.raw);
         }
       }
       if (lastImage.lastQuery !== imageSetting) {
@@ -85,7 +131,7 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          backgroundImage = data.urls.full;
+          backgroundImage = buildUnsplashUrl(data.urls.raw);
           emit('update:lastImage', {
             ...data,
             queryTime: new Date().toISOString(),
@@ -111,7 +157,7 @@ const fetchBackgroundImage = async () => {
       const now = new Date();
       const todaysDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
       if (lastImage.nasaDate === todaysDate) {
-        backgroundImage = lastImage.hdurl;
+        backgroundImage = lastImage.url;
       }
     }
 
@@ -122,7 +168,7 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          backgroundImage = data.hdurl;
+          backgroundImage = data.url;
           emit('update:lastImage', {
             ...data,
             queryTime: new Date().toISOString(),
@@ -162,9 +208,12 @@ const fetchBackgroundImage = async () => {
         );
         if (response.ok) {
           const data = await response.json();
-          backgroundImage = data.dataUri;
+          const { width: physW, height: physH } = getPhysicalDimensions();
+          const resizedDataUri = await resizeDataUri(data.dataUri, physW, physH);
+          backgroundImage = resizedDataUri;
           emit('update:lastImage', {
             ...data,
+            dataUri: resizedDataUri,
             queryTime: new Date().toISOString(),
             lastQuery: imageSetting,
             googleEarth: true,
