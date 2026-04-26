@@ -94,7 +94,7 @@ const close = () => {
 
 <template>
   <div ref="wrapperRef" class="dropdown-wrapper">
-    <div class="dropdown-trigger" @click.stop="toggle">
+    <div class="dropdown-trigger" @click.stop.prevent="toggle">
       <slot name="trigger" :open="open" />
     </div>
     <Teleport to="body">
@@ -102,6 +102,7 @@ const close = () => {
         <ul>
           <slot :close="close" />
         </ul>
+        <slot name="footer" :close="close" />
       </div>
     </Teleport>
   </div>
@@ -165,5 +166,25 @@ const close = () => {
 
 .dropdown-menu button.btn-danger:hover {
   background-color: hsla(5, 60%, 50%, 0.15);
+}
+
+.dropdown-menu a {
+  background: none;
+  color: var(--color-text);
+  display: block;
+  padding: 0.75em 1em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.dropdown-menu a:hover {
+  background-color: hsla(160, 100%, 37%, 0.2);
+}
+
+.dropdown-menu .import-error {
+  color: var(--color-danger, #c00);
+  font-size: 0.85em;
+  margin: 0;
+  padding: 0.5em 1.5em;
 }
 </style>
