@@ -76,6 +76,20 @@ const addGroupSeparator = (entryIndex: number) => {
   if (!group || typeof group === 'string' || !('links' in group)) return;
   group.links.push('');
 };
+
+const setLinkOpenIn = (index: number, value: string) => {
+  const entry = panelDupe.value.entries[index];
+  if (!entry || typeof entry === 'string' || 'links' in entry) return;
+  entry.openIn = value as link['openIn'];
+};
+
+const setGroupLinkOpenIn = (entryIndex: number, groupIndex: number, value: string) => {
+  const group = panelDupe.value.entries[entryIndex];
+  if (!group || typeof group === 'string' || !('links' in group)) return;
+  const groupEntry = group.links[groupIndex];
+  if (!groupEntry || typeof groupEntry === 'string') return;
+  groupEntry.openIn = value as link['openIn'];
+};
 </script>
 
 <template>
@@ -180,12 +194,16 @@ const addGroupSeparator = (entryIndex: number) => {
                   @keydown.enter="save"
                   @keydown.escape="close"
                 />
-                <label class="newTabToggle" title="Open in new tab">
-                  <input
-                    v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).newTab"
-                    type="checkbox"
-                  />
-                </label>
+                <select
+                  :value="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).openIn ?? 'default'"
+                  @change="(e) => setGroupLinkOpenIn(index, groupIndex, (e.target as HTMLSelectElement).value)"
+                  class="openInSelect"
+                  title="Link target"
+                >
+                  <option value="default">Default</option>
+                  <option value="tab">New Tab</option>
+                  <option value="self">Current Tab</option>
+                </select>
               </div>
               <input
                 v-model="((panelDupe.entries[index] as linkGroup).links[groupIndex] as link).favicon"
@@ -232,12 +250,16 @@ const addGroupSeparator = (entryIndex: number) => {
               @keydown.enter="save"
               @keydown.escape="close"
             />
-            <label class="newTabToggle" title="Open in new tab">
-              <input
-                v-model="(panelDupe.entries[index] as link).newTab"
-                type="checkbox"
-              />
-            </label>
+            <select
+              :value="(panelDupe.entries[index] as link).openIn ?? 'default'"
+              @change="(e) => setLinkOpenIn(index, (e.target as HTMLSelectElement).value)"
+              class="openInSelect"
+              title="Link target"
+            >
+              <option value="default">Default</option>
+              <option value="tab">New Tab</option>
+              <option value="self">Current Tab</option>
+            </select>
           </div>
           <input
             v-model="(panelDupe.entries[index] as link).favicon"
@@ -448,18 +470,19 @@ const addGroupSeparator = (entryIndex: number) => {
   flex: 1;
 }
 
-.newTabToggle {
-  align-items: center;
+.openInSelect {
   background: var(--color-background);
   border: var(--color-border) solid 1px;
   border-left: none;
   border-radius: 0 3px 3px 0;
+  color: var(--color-text);
   cursor: pointer;
-  display: flex;
-  padding: 0.2em 0.5em;
+  font-size: 0.875em;
+  padding: 0.2em 0.4em;
+  white-space: nowrap;
 }
 
-.newTabToggle:hover {
+.openInSelect:hover {
   background-color: var(--color-primary-subtle);
   border-color: var(--color-primary-border);
 }

@@ -25,7 +25,7 @@ const handleImageError = (event: Event) => {
 </script>
 
 <template>
-  <a class="entry" :href="link.url" :target="link.newTab ? '_blank' : '_self'">
+  <a class="entry" :href="link.url" :target="link.openIn === 'tab' ? '_blank' : link.openIn === 'self' ? '_self' : undefined">
     <img v-if="preferences.style.favicons && faviconUrl" :src="faviconUrl" :alt="link.title" class="favicon" height="16" width="16" @error="handleImageError" />
     <span>{{ link.title }} <span v-if="group" class="caret"></span></span>
   </a>

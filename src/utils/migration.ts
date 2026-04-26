@@ -44,6 +44,13 @@ type OldMenuItem = {
   favicon?: string;
 };
 
+type MaybeLegacyLink = {
+  newTab?: boolean;
+  openIn?: string;
+  links?: unknown[];
+  [key: string]: unknown;
+};
+
 type OldStyle = {
   font?: string;
   favicons?: boolean;
@@ -81,6 +88,8 @@ export function migratePanels(raw: unknown): panel[] {
   data = migratePanelButtonsToEntries(data);
   // Step 2: rename panel.links → panel.entries (intermediate format)
   data = migratePanelLinksToEntries(data);
+  // Step 3: convert link.newTab boolean → link.openIn string
+  data = migrateLinkNewTabToOpenIn(data);
   // migratePanelLinksToEntries only renames `links` → `entries` on each panel
   // and returns the same array, so the cast is safe.
   return data.links as panel[];
@@ -100,6 +109,9 @@ export function migrateData(raw: unknown): AppData {
 
   // Step 2: rename panel.links → panel.entries (intermediate format)
   data = migratePanelLinksToEntries(data);
+
+  // Step 3: convert link.newTab boolean → link.openIn string
+  data = migrateLinkNewTabToOpenIn(data);
 
   return data as unknown as AppData;
 }
@@ -239,6 +251,41 @@ function migratePanelLinksToEntries(data: MaybeOldAppData): MaybeOldAppData {
       return { ...rest, entries: panelLinks ?? [] };
     }
     return panel;
+  });
+
+  return { ...data, links: migratedPanels };
+}
+
+/**
+ * Migration: individual `link` objects used to have a `newTab: boolean` field.
+ * Convert `newTab: true` → `openIn: 'tab'` and `newTab: false` → `openIn: 'self'`.
+ * Links without a `newTab` field are left unchanged (treated as `openIn: 'default'`).
+ */
+function migrateSingleLink(entry: unknown): unknown {
+  if (typeof entry === 'string') return entry;
+  if (!entry || typeof entry !== 'object') return entry;
+  const obj = entry as MaybeLegacyLink;
+
+  // If it's a link group, migrate its nested links
+  if (Array.isArray(obj.links)) {
+    return { ...obj, links: obj.links.map(migrateSingleLink) };
+  }
+
+  // If it's a link that still has the old `newTab` boolean field
+  if ('newTab' in obj && !('openIn' in obj)) {
+    const { newTab, ...rest } = obj;
+    return { ...rest, openIn: newTab ? 'tab' : 'self' };
+  }
+
+  return entry;
+}
+
+function migrateLinkNewTabToOpenIn(data: MaybeOldAppData): MaybeOldAppData {
+  if (!Array.isArray(data.links)) return data;
+
+  const migratedPanels = (data.links as Array<{ entries?: unknown[]; [key: string]: unknown }>).map((panel) => {
+    if (!Array.isArray(panel.entries)) return panel;
+    return { ...panel, entries: panel.entries.map(migrateSingleLink) };
   });
 
   return { ...data, links: migratedPanels };
