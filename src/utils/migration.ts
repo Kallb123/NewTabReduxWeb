@@ -283,7 +283,7 @@ function migrateSingleLink(entry: unknown): unknown {
 function migrateLinkNewTabToOpenIn(data: MaybeOldAppData): MaybeOldAppData {
   if (!Array.isArray(data.links)) return data;
 
-  const migratedPanels = (data.links as Array<{ entries?: unknown[]; [key: string]: unknown }>).map((panel) => {
+  const migratedPanels = (data.links as MaybeOldPanel[]).map((panel) => {
     if (!Array.isArray(panel.entries)) return panel;
     return { ...panel, entries: panel.entries.map(migrateSingleLink) };
   });
