@@ -91,6 +91,8 @@ onMounted(async () => {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 36em;
+  max-width: 90vw;
+  box-sizing: border-box;
 }
 
 ul {

@@ -1,29 +1,36 @@
-# NewTabReduxWeb
+# New Tab Redux Web
 
-This template should help get you started developing with Vue 3 in Vite.
+A customisable new tab page served as an online web app, deployable to any static hosting provider (e.g. Cloudflare Pages).
 
-## Recommended IDE Setup
+Set it as your browser's home page or new tab URL to get a clean, personalised start page with organised link panels.
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Features
 
-## Recommended Browser Setup
+- Organised link panels with drag-and-drop reordering
+- Customisable background (solid colour, gradient, or Google Earth imagery)
+- Light, dark, and system themes
+- Inline editing of links and panel titles
+- Import / export settings as JSON
+- No account required — all data is stored in your browser's `localStorage`
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Live Deployments
 
-## Type Support for `.vue` Imports in TS
+Each branch is automatically deployed to Cloudflare Pages:
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- **Main branch:** [newtabreduxweb.pages.dev](https://newtabreduxweb.pages.dev/)
+- Other branches are accessible via `https://<branch-name>.newtabreduxweb.pages.dev/`
 
-## Customize configuration
+## Usage
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Open the deployed URL in your browser and optionally set it as your home page or new tab URL in your browser settings.
 
-## Project Setup
+## Development
+
+### Prerequisites
+
+- Node.js `^20.19.0` or `>=22.12.0`
+
+### Project Setup
 
 ```sh
 npm install
@@ -40,3 +47,19 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### Preview Production Build
+
+```sh
+npm run preview
+```
+
+## Tech Stack
+
+- [Vue 3](https://vuejs.org/) + TypeScript
+- [Vite](https://vite.dev/)
+- Deployed via [Cloudflare Pages](https://pages.cloudflare.com/)
+
+## Repository
+
+[github.com/Kallb123/NewTabReduxWeb](https://github.com/Kallb123/NewTabReduxWeb)
