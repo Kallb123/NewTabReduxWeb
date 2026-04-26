@@ -45,8 +45,9 @@ onUnmounted(() => {
   resizeObserver?.disconnect();
 });
 
-const deleteSelf = () => {
+const deleteSelf = (close: () => void) => {
   if (confirm(`Are you sure you want to delete the panel "${props.panel.title}"? This action cannot be undone.`)) {
+    close();
     props.deletePanel(props.panelIndex);
   }
 };
@@ -111,7 +112,7 @@ const preferences = inject('preferences') as Preferences;
               </li>
               <li class="separator"></li>
               <li>
-                <button class="btn-danger" :disabled="totalPanels <= 1" @click="close(); deleteSelf()">
+                <button class="btn-danger" :disabled="totalPanels <= 1" @click="deleteSelf(close)">
                   <font-awesome-icon icon="fa-solid fa-trash" /> Delete Panel
                 </button>
               </li>

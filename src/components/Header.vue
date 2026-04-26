@@ -15,7 +15,7 @@ const { openSettings, openAbout, onExport, onImport } = defineProps<{
 
 const fileInputRef = ref<HTMLInputElement>();
 const importError = ref<string | null>(null);
-const dropdownClose = ref<(() => void) | null>(null);
+let dropdownClose: (() => void) | null = null;
 
 const themes = ['light', 'dark', 'system'] as const;
 
@@ -27,7 +27,7 @@ const toggleTheme = () => {
 
 const triggerImport = (close: () => void) => {
   importError.value = null;
-  dropdownClose.value = close;
+  dropdownClose = close;
   fileInputRef.value?.click();
 };
 
@@ -50,7 +50,7 @@ const handleFileChange = (event: Event) => {
       const raw = JSON.parse(reader.result);
       const migrated = migrateData(raw);
       onImport(migrated);
-      dropdownClose.value?.();
+      dropdownClose?.();
     } catch (e) {
       importError.value = e instanceof Error ? e.message : 'Failed to import file';
     } finally {
